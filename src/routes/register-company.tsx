@@ -67,7 +67,7 @@ function RegisterCompany() {
                 placeholder="e.g. Mwanza Regional Council"
                 className={fieldStyles.input}
               />
-              <FieldError message={errors.name} />
+              <FieldError message={errors["name"]} />
             </label>
 
             <label className="block">
@@ -80,7 +80,7 @@ function RegisterCompany() {
                   <option key={s}>{s}</option>
                 ))}
               </select>
-              <FieldError message={errors.sector} />
+              <FieldError message={errors["sector"]} />
             </label>
 
             <label className="block">
@@ -93,7 +93,7 @@ function RegisterCompany() {
                   <option key={r}>{r}</option>
                 ))}
               </select>
-              <FieldError message={errors.region} />
+              <FieldError message={errors["region"]} />
             </label>
 
             <label className="block sm:col-span-2">
@@ -103,7 +103,7 @@ function RegisterCompany() {
                 placeholder="placements@example.co.tz or +255 7XX XXX XXX"
                 className={fieldStyles.input}
               />
-              <FieldError message={errors.contact} />
+              <FieldError message={errors["contact"]} />
             </label>
           </div>
 
@@ -118,7 +118,7 @@ function RegisterCompany() {
   );
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message }: { message: string | undefined }) {
   if (!message) return null;
   return <p className="mt-1.5 font-mono text-[11px] text-destructive">{message}</p>;
 }

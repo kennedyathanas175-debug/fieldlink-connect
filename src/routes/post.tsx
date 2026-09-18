@@ -156,7 +156,7 @@ function PostPlacement() {
                 placeholder="e.g. Civil Engineering Intern"
                 className={fieldStyles.input}
               />
-              <FieldError message={errors.title} />
+              <FieldError message={errors["title"]} />
             </label>
 
             <label className="block">
@@ -171,25 +171,25 @@ function PostPlacement() {
                   </option>
                 ))}
               </select>
-              <FieldError message={errors.field} />
+              <FieldError message={errors["field"]} />
             </label>
 
             <label className="block">
               <span className={fieldStyles.label}>Number of slots</span>
               <input name="slots" type="number" min={1} placeholder="e.g. 3" className={fieldStyles.input} />
-              <FieldError message={errors.slots} />
+              <FieldError message={errors["slots"]} />
             </label>
 
             <label className="block">
               <span className={fieldStyles.label}>Duration</span>
               <input name="duration" placeholder="e.g. 3 months" className={fieldStyles.input} />
-              <FieldError message={errors.duration} />
+              <FieldError message={errors["duration"]} />
             </label>
 
             <label className="block">
               <span className={fieldStyles.label}>Application deadline</span>
               <input name="deadline" type="date" className={fieldStyles.input} />
-              <FieldError message={errors.deadline} />
+              <FieldError message={errors["deadline"]} />
             </label>
 
             <label className="block sm:col-span-2">
@@ -199,7 +199,7 @@ function PostPlacement() {
                   <option key={r}>{r}</option>
                 ))}
               </select>
-              <FieldError message={errors.region} />
+              <FieldError message={errors["region"]} />
             </label>
 
             <label className="block sm:col-span-2">
@@ -210,7 +210,7 @@ function PostPlacement() {
                 placeholder="What will the student do? Any requirements?"
                 className={fieldStyles.input}
               />
-              <FieldError message={errors.description} />
+              <FieldError message={errors["description"]} />
             </label>
           </div>
 
@@ -225,7 +225,7 @@ function PostPlacement() {
   );
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message }: { message: string | undefined }) {
   if (!message) return null;
   return <p className="mt-1.5 font-mono text-[11px] text-destructive">{message}</p>;
 }
