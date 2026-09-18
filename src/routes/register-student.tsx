@@ -50,7 +50,7 @@ function RegisterStudent() {
     if (!parsed.success) {
       for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message;
     }
-    if (!idPhoto) next.idPhoto = "A student ID photo is required.";
+    if (!idPhoto) next["idPhoto"] = "A student ID photo is required.";
     setErrors(next);
     if (Object.keys(next).length > 0 || !parsed.success || !idPhoto) return;
 
@@ -90,7 +90,7 @@ function RegisterStudent() {
             <label className="block sm:col-span-2">
               <span className={fieldStyles.label}>Full name</span>
               <input name="fullName" placeholder="e.g. Amani Joseph" className={fieldStyles.input} />
-              <FieldError message={errors.fullName} />
+              <FieldError message={errors["fullName"]} />
             </label>
 
             <label className="block">
@@ -100,7 +100,7 @@ function RegisterStudent() {
                 placeholder="e.g. Sokoine University of Agriculture"
                 className={fieldStyles.input}
               />
-              <FieldError message={errors.institution} />
+              <FieldError message={errors["institution"]} />
             </label>
 
             <label className="block">
@@ -115,7 +115,7 @@ function RegisterStudent() {
                   </option>
                 ))}
               </select>
-              <FieldError message={errors.field} />
+              <FieldError message={errors["field"]} />
             </label>
 
             <label className="block">
@@ -128,7 +128,7 @@ function RegisterStudent() {
                   <option key={y}>{y}</option>
                 ))}
               </select>
-              <FieldError message={errors.year} />
+              <FieldError message={errors["year"]} />
             </label>
 
             <label className="block">
@@ -141,7 +141,7 @@ function RegisterStudent() {
                   <option key={r}>{r}</option>
                 ))}
               </select>
-              <FieldError message={errors.region} />
+              <FieldError message={errors["region"]} />
             </label>
 
             <label className="block sm:col-span-2">
@@ -152,7 +152,7 @@ function RegisterStudent() {
                 placeholder="+255 7XX XXX XXX"
                 className={fieldStyles.input}
               />
-              <FieldError message={errors.phone} />
+              <FieldError message={errors["phone"]} />
             </label>
 
             <div className="sm:col-span-2">
@@ -168,7 +168,7 @@ function RegisterStudent() {
                   {idPhoto ? `Selected: ${idPhoto.name}` : "Used only for verification. Not shown to companies."}
                 </p>
               </div>
-              <FieldError message={errors.idPhoto} />
+              <FieldError message={errors["idPhoto"]} />
             </div>
           </div>
 
@@ -183,7 +183,7 @@ function RegisterStudent() {
   );
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message }: { message: string | undefined }) {
   if (!message) return null;
   return <p className="mt-1.5 font-mono text-[11px] text-destructive">{message}</p>;
 }

@@ -84,7 +84,7 @@ export const FIELDS: FieldCategory[] = [
 ];
 
 export const fieldById = (id: FieldId) =>
-  FIELDS.find((f) => f.id === id) ?? FIELDS[0];
+  FIELDS.find((f) => f.id === id) ?? FIELDS[0]!;
 
 export const REGIONS = [
   "Arusha",
@@ -168,10 +168,40 @@ export interface Posting {
   createdAt: number;
 }
 
+export interface Application {
+  id: string;
+  postingId: string;
+  postingTitle: string;
+  companyName: string;
+  studentId: string;
+  /** Index into JOURNEY_STAGES. */
+  stage: number;
+  createdAt: number;
+}
+
+/** The full student lifecycle, end to end. */
+export const JOURNEY_STAGES = [
+  "Create Profile",
+  "Search / Get Matched",
+  "Apply",
+  "Institution Approval",
+  "Company Review",
+  "Accepted",
+  "Placement Letter",
+  "Start Field / Internship",
+  "Attendance / Logbook",
+  "Supervisor Evaluation",
+  "Completion",
+  "Digital Certificate / Experience Record",
+] as const;
+
+export const FINAL_STAGE = JOURNEY_STAGES.length - 1;
+
 interface DB {
   students: Student[];
   companies: Company[];
   postings: Posting[];
+  applications: Application[];
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -296,9 +326,9 @@ const seedStudents: Student[] = Array.from({ length: 42 }, (_, i) => ({
   id: `s${i}`,
   fullName: `Student ${i + 1}`,
   institution: "Registered institution",
-  field: FIELDS[i % FIELDS.length].id,
-  year: YEARS[i % YEARS.length],
-  region: REGIONS[i % REGIONS.length],
+  field: FIELDS[i % FIELDS.length]!.id,
+  year: YEARS[i % YEARS.length]!,
+  region: REGIONS[i % REGIONS.length]!,
   phone: "+255 7XX XXX XXX",
   idPhotoName: "verified.jpg",
   createdAt: Date.now(),
@@ -308,6 +338,7 @@ let db: DB = {
   students: seedStudents,
   companies: seedCompanies,
   postings: seedPostings,
+  applications: [],
 };
 
 const listeners = new Set<() => void>();
@@ -354,6 +385,34 @@ export function addPosting(input: Omit<Posting, "id" | "createdAt">) {
 
 export function countStudentsInField(field: FieldId) {
   return db.students.filter((s) => s.field === field).length;
+}
+
+export function addApplication(posting: Posting, studentId: string) {
+  if (db.applications.some((a) => a.postingId === posting.id && a.studentId === studentId)) {
+    return db.applications.find((a) => a.postingId === posting.id && a.studentId === studentId)!;
+  }
+  const application: Application = {
+    id: uid(),
+    postingId: posting.id,
+    postingTitle: posting.title,
+    companyName: posting.companyName,
+    studentId,
+    stage: 2, // profile created + matched + applied
+    createdAt: Date.now(),
+  };
+  db = { ...db, applications: [...db.applications, application] };
+  emit();
+  return application;
+}
+
+export function advanceApplication(id: string) {
+  db = {
+    ...db,
+    applications: db.applications.map((a) =>
+      a.id === id ? { ...a, stage: Math.min(a.stage + 1, FINAL_STAGE) } : a,
+    ),
+  };
+  emit();
 }
 
 export function formatDeadline(iso: string) {

@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as ListingsRouteImport } from './routes/listings'
+import { Route as PostRouteImport } from './routes/post'
 import { Route as RegisterCompanyRouteImport } from './routes/register-company'
 import { Route as RegisterStudentRouteImport } from './routes/register-student'
 
@@ -19,9 +21,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JourneyRoute = JourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ListingsRoute = ListingsRouteImport.update({
   id: '/listings',
   path: '/listings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostRoute = PostRouteImport.update({
+  id: '/post',
+  path: '/post',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterCompanyRoute = RegisterCompanyRouteImport.update({
@@ -37,34 +49,61 @@ const RegisterStudentRoute = RegisterStudentRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/journey': typeof JourneyRoute
   '/listings': typeof ListingsRoute
+  '/post': typeof PostRoute
   '/register-company': typeof RegisterCompanyRoute
   '/register-student': typeof RegisterStudentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/journey': typeof JourneyRoute
   '/listings': typeof ListingsRoute
+  '/post': typeof PostRoute
   '/register-company': typeof RegisterCompanyRoute
   '/register-student': typeof RegisterStudentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/journey': typeof JourneyRoute
   '/listings': typeof ListingsRoute
+  '/post': typeof PostRoute
   '/register-company': typeof RegisterCompanyRoute
   '/register-student': typeof RegisterStudentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/listings' | '/register-company' | '/register-student'
+  fullPaths:
+    | '/'
+    | '/journey'
+    | '/listings'
+    | '/post'
+    | '/register-company'
+    | '/register-student'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/listings' | '/register-company' | '/register-student'
-  id: '__root__' | '/' | '/listings' | '/register-company' | '/register-student'
+  to:
+    | '/'
+    | '/journey'
+    | '/listings'
+    | '/post'
+    | '/register-company'
+    | '/register-student'
+  id:
+    | '__root__'
+    | '/'
+    | '/journey'
+    | '/listings'
+    | '/post'
+    | '/register-company'
+    | '/register-student'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  JourneyRoute: typeof JourneyRoute
   ListingsRoute: typeof ListingsRoute
+  PostRoute: typeof PostRoute
   RegisterCompanyRoute: typeof RegisterCompanyRoute
   RegisterStudentRoute: typeof RegisterStudentRoute
 }
@@ -78,11 +117,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journey': {
+      id: '/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof JourneyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/listings': {
       id: '/listings'
       path: '/listings'
       fullPath: '/listings'
       preLoaderRoute: typeof ListingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post': {
+      id: '/post'
+      path: '/post'
+      fullPath: '/post'
+      preLoaderRoute: typeof PostRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register-company': {
@@ -104,7 +157,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  JourneyRoute: JourneyRoute,
   ListingsRoute: ListingsRoute,
+  PostRoute: PostRoute,
   RegisterCompanyRoute: RegisterCompanyRoute,
   RegisterStudentRoute: RegisterStudentRoute,
 }
