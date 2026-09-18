@@ -15,8 +15,8 @@ type Search = { field: FieldId | "all"; region: string };
 
 export const Route = createFileRoute("/listings")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    field: (search.field as Search["field"]) ?? "all",
-    region: (search.region as string) ?? "all",
+    field: (search["field"] as Search["field"]) ?? "all",
+    region: (search["region"] as string) ?? "all",
   }),
   head: () => ({
     meta: [

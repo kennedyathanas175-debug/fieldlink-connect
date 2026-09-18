@@ -84,7 +84,7 @@ export const FIELDS: FieldCategory[] = [
 ];
 
 export const fieldById = (id: FieldId) =>
-  FIELDS.find((f) => f.id === id) ?? FIELDS[0];
+  FIELDS.find((f) => f.id === id) ?? FIELDS[0]!;
 
 export const REGIONS = [
   "Arusha",
