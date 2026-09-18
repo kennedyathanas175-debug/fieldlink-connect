@@ -1,9 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { SiteShell, PageHeading } from "@/components/site-shell";
 import {
   FIELDS,
   REGIONS,
+  addApplication,
   fieldById,
   formatDeadline,
   getCurrentStudentId,
@@ -40,18 +40,24 @@ function Listings() {
   const { field, region } = Route.useSearch();
   const navigate = useNavigate({ from: "/listings" });
   const db = useDB();
-  const [applied, setApplied] = useState<string[]>([]);
 
   const results = db.postings.filter(
     (p) => (field === "all" || p.field === field) && (region === "all" || p.region === region),
   );
 
-  function apply(id: string) {
-    if (!getCurrentStudentId()) {
+  const studentId = getCurrentStudentId();
+  const appliedIds = new Set(
+    db.applications.filter((a) => a.studentId === studentId).map((a) => a.postingId),
+  );
+
+  function apply(postingId: string) {
+    const current = getCurrentStudentId();
+    if (!current) {
       navigate({ to: "/register-student" });
       return;
     }
-    setApplied((a) => (a.includes(id) ? a : [...a, id]));
+    const posting = db.postings.find((p) => p.id === postingId);
+    if (posting) addApplication(posting, current);
   }
 
   return (
@@ -63,10 +69,10 @@ function Listings() {
       />
 
       <section className="py-8">
-        <div className="overflow-hidden rounded-2xl border border-line shadow-sm ring-1 ring-black/5">
-          <div className="flex flex-wrap items-center gap-2 border-b border-line bg-glass/70 px-4 py-3 backdrop-blur-xl">
-            <label className="flex items-center gap-1.5 rounded-md border border-line bg-paper/70 px-2 py-1.5">
-              <span className="font-mono text-[10px] uppercase tracking-wide text-ink-soft">
+        <div className="border border-line">
+          <div className="flex flex-wrap items-center gap-2 border-b border-line bg-paper px-4 py-3">
+            <label className="flex items-center gap-2 border border-line bg-glass px-3 py-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
                 Field
               </span>
               <select
@@ -84,8 +90,8 @@ function Listings() {
                 ))}
               </select>
             </label>
-            <label className="flex items-center gap-1.5 rounded-md border border-line bg-paper/70 px-2 py-1.5">
-              <span className="font-mono text-[10px] uppercase tracking-wide text-ink-soft">
+            <label className="flex items-center gap-2 border border-line bg-glass px-3 py-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
                 Region
               </span>
               <select
@@ -106,52 +112,67 @@ function Listings() {
             </span>
           </div>
 
-          <div className="divide-y divide-line bg-glass/40 backdrop-blur-md">
+          <div className="divide-y divide-line bg-glass">
             {results.length === 0 ? (
               <p className="p-6 text-sm text-ink-soft">
                 No postings match these filters yet. Try another field or region.
               </p>
             ) : (
-              results.map((p) => (
-                <div key={p.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded bg-brand-soft/50 px-2 py-0.5 font-mono text-[10px] text-brand">
-                        {fieldById(p.field).short}
-                      </span>
-                      <span className="font-mono text-xs text-ink-soft">{p.region}</span>
+              results.map((p) => {
+                const applied = appliedIds.has(p.id);
+                return (
+                  <div key={p.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="bg-brand-soft px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-brand">
+                          {fieldById(p.field).short}
+                        </span>
+                        <span className="font-mono text-xs text-ink-soft">{p.region}</span>
+                      </div>
+                      <p className="mt-1.5 font-display text-base font-bold">{p.title}</p>
+                      <p className="text-sm text-ink-soft">{p.companyName}</p>
+                      {p.description ? (
+                        <p className="mt-1.5 max-w-[70ch] text-sm text-ink-soft text-pretty">
+                          {p.description}
+                        </p>
+                      ) : null}
                     </div>
-                    <p className="mt-1.5 font-display text-base font-bold">{p.title}</p>
-                    <p className="text-sm text-ink-soft">{p.companyName}</p>
-                    {p.description ? (
-                      <p className="mt-1.5 max-w-[70ch] text-sm text-ink-soft text-pretty">
-                        {p.description}
-                      </p>
-                    ) : null}
+                    <div className="flex items-center gap-5 font-mono text-xs text-ink-soft">
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-[0.12em]">Slots</span>
+                        {p.slots}
+                      </div>
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-[0.12em]">
+                          Duration
+                        </span>
+                        {p.duration}
+                      </div>
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-[0.12em]">
+                          Deadline
+                        </span>
+                        {formatDeadline(p.deadline)}
+                      </div>
+                    </div>
+                    {applied ? (
+                      <Link
+                        to="/journey"
+                        className="border border-line bg-accent-soft px-4 py-2 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink"
+                      >
+                        Applied · Track
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => apply(p.id)}
+                        className="border border-ink bg-ink px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-navy"
+                      >
+                        Apply
+                      </button>
+                    )}
                   </div>
-                  <div className="flex items-center gap-5 font-mono text-xs text-ink-soft">
-                    <div>
-                      <span className="block text-[10px] uppercase tracking-wide">Slots</span>
-                      {p.slots}
-                    </div>
-                    <div>
-                      <span className="block text-[10px] uppercase tracking-wide">Duration</span>
-                      {p.duration}
-                    </div>
-                    <div>
-                      <span className="block text-[10px] uppercase tracking-wide">Deadline</span>
-                      {formatDeadline(p.deadline)}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => apply(p.id)}
-                    disabled={applied.includes(p.id)}
-                    className="rounded-md border border-line bg-paper/70 px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-brand/40 disabled:text-ink-soft"
-                  >
-                    {applied.includes(p.id) ? "Applied" : "Apply"}
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
