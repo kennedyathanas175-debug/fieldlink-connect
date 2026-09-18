@@ -50,7 +50,7 @@ function RegisterStudent() {
     if (!parsed.success) {
       for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message;
     }
-    if (!idPhoto) next.idPhoto = "A student ID photo is required.";
+    if (!idPhoto) next["idPhoto"] = "A student ID photo is required.";
     setErrors(next);
     if (Object.keys(next).length > 0 || !parsed.success || !idPhoto) return;
 
