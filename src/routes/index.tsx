@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteShell } from "@/components/site-shell";
-import { FIELDS, REGIONS, fieldById, useDB } from "@/lib/fieldlink";
+import { FIELDS, JOURNEY_STAGES, REGIONS, fieldById, useDB } from "@/lib/fieldlink";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "FieldLink TZ connects students from any college or university in Tanzania with internship and field-placement openings, matched by field of study.",
+          "FieldLink TZ connects students from any college or university in Tanzania with internship and field-placement openings, matched by field of study, with a full journey from application to digital certificate.",
       },
       { property: "og:title", content: "FieldLink TZ — Field placements across Tanzania" },
       {
@@ -24,97 +24,158 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const db = useDB();
-  const latest = [...db.postings].sort((a, b) => b.createdAt - a.createdAt).slice(0, 2);
+  const latest = [...db.postings].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
 
   return (
     <SiteShell>
-      <section className="grid items-center gap-10 py-12 md:grid-cols-12 md:py-16">
-        <div className="animate-rise md:col-span-7">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-glass/60 px-3 py-1 font-mono text-xs text-ink-soft backdrop-blur">
-            <span className="size-1.5 rounded-full bg-accent-strong" /> Nationwide field-placement
-            matching
-          </p>
-          <h1 className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-balance sm:text-5xl">
-            Matched by your <span className="text-brand">field of study</span>, not your
-            institution.
-          </h1>
-          <p className="mt-5 max-w-[46ch] text-base leading-relaxed text-ink-soft text-pretty">
-            FieldLink TZ connects students from any college or university with internship and
-            field-placement (mafunzo kwa vitendo) openings at companies and offices across Tanzania.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              to="/register-student"
-              className="inline-flex items-center rounded-md bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-sm ring-1 ring-black/5 transition-colors hover:bg-brand/90"
-            >
-              Register as a Student
-            </Link>
-            <Link
-              to="/register-company"
-              className="inline-flex items-center rounded-md border border-line bg-glass/70 px-5 py-3 text-sm font-semibold text-ink backdrop-blur transition-colors hover:bg-glass"
-            >
-              Post an Opportunity (Company)
-            </Link>
-          </div>
-          <div className="mt-9 grid max-w-md grid-cols-3 divide-x divide-line overflow-hidden rounded-xl border border-line bg-glass/70 backdrop-blur-xl">
-            <div className="px-4 py-3">
-              <p className="font-mono text-2xl font-medium tabular-nums text-ink">
-                {db.students.length.toLocaleString()}
+      {/* HERO — dark navy panel */}
+      <section className="py-10">
+        <div className="relative overflow-hidden bg-navy text-paper">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(90deg, white 0 1px, transparent 1px 80px), repeating-linear-gradient(0deg, white 0 1px, transparent 1px 80px)",
+            }}
+          />
+          <div className="relative grid gap-10 p-8 sm:p-12 md:grid-cols-12">
+            <div className="animate-rise md:col-span-7">
+              <p className="mb-5 inline-flex items-center gap-2 border border-paper/20 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em] text-paper/70">
+                <span className="size-1.5 bg-accent-strong" /> Nationwide field-placement matching
               </p>
-              <p className="mt-1 text-xs text-ink-soft">Students registered</p>
-            </div>
-            <div className="px-4 py-3">
-              <p className="font-mono text-2xl font-medium tabular-nums text-ink">
-                {db.postings.length.toLocaleString()}
+              <h1 className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-balance sm:text-6xl">
+                Matched by your <span className="text-accent-strong">field of study</span>, not your
+                institution.
+              </h1>
+              <p className="mt-6 max-w-[48ch] text-base leading-relaxed text-paper/70 text-pretty">
+                FieldLink TZ connects students from any college or university with internship and
+                field-placement (mafunzo kwa vitendo) openings at companies and offices across
+                Tanzania — then follows you all the way to a digital certificate.
               </p>
-              <p className="mt-1 text-xs text-ink-soft">Postings published</p>
-            </div>
-            <div className="px-4 py-3">
-              <p className="font-mono text-2xl font-medium tabular-nums text-ink">
-                {REGIONS.length}
-              </p>
-              <p className="mt-1 text-xs text-ink-soft">Regions covered</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="animate-rise md:col-span-5">
-          <div className="rounded-2xl border border-line bg-glass/70 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl">
-            <div className="flex items-center justify-between px-1 pb-3">
-              <p className="font-mono text-xs uppercase tracking-wider text-ink-soft">
-                Now on the board
-              </p>
-              <span className="rounded-full bg-accent-soft px-2 py-0.5 font-mono text-[10px] text-accent-strong">
-                LIVE
-              </span>
-            </div>
-            <div className="space-y-2.5">
-              {latest.map((p) => (
-                <div key={p.id} className="rounded-lg border border-line bg-paper/60 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="rounded bg-brand-soft/50 px-2 py-0.5 font-mono text-[10px] text-brand">
-                      {fieldById(p.field).short}
-                    </span>
-                    <span className="font-mono text-[10px] text-ink-soft">{p.region}</span>
-                  </div>
-                  <p className="mt-2 text-sm font-semibold">{p.title}</p>
-                  <p className="text-xs text-ink-soft">
-                    {p.companyName} · {p.slots} slots
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/register-student"
+                  className="inline-flex items-center bg-accent-strong px-6 py-3.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-navy transition-colors hover:bg-accent-strong/90"
+                >
+                  Register as a Student
+                </Link>
+                <Link
+                  to="/register-company"
+                  className="inline-flex items-center border border-paper/30 px-6 py-3.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-paper hover:text-navy"
+                >
+                  Post an Opportunity
+                </Link>
+              </div>
+              <div className="mt-10 grid max-w-md grid-cols-3 divide-x divide-paper/15 border border-paper/15">
+                <div className="px-4 py-4">
+                  <p className="font-mono text-2xl font-medium tabular-nums text-paper">
+                    {db.students.length.toLocaleString()}
+                  </p>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/60">
+                    Students registered
                   </p>
                 </div>
-              ))}
+                <div className="px-4 py-4">
+                  <p className="font-mono text-2xl font-medium tabular-nums text-paper">
+                    {db.postings.length.toLocaleString()}
+                  </p>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/60">
+                    Postings published
+                  </p>
+                </div>
+                <div className="px-4 py-4">
+                  <p className="font-mono text-2xl font-medium tabular-nums text-paper">
+                    {REGIONS.length}
+                  </p>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/60">
+                    Regions covered
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="animate-rise md:col-span-5">
+              <div className="border border-paper/15 bg-paper/[0.04] p-4">
+                <div className="flex items-center justify-between border-b border-paper/15 px-1 pb-3">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-paper/60">
+                    Now on the board
+                  </p>
+                  <span className="bg-accent-strong px-2 py-0.5 font-mono text-[10px] font-semibold text-navy">
+                    LIVE
+                  </span>
+                </div>
+                <div className="mt-3 space-y-2.5">
+                  {latest.map((p) => (
+                    <Link
+                      key={p.id}
+                      to="/listings"
+                      search={{ field: "all", region: "all" }}
+                      className="block border border-paper/10 bg-paper/[0.05] p-3 transition-colors hover:border-accent-strong/60"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="bg-paper/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-accent-strong">
+                          {fieldById(p.field).short}
+                        </span>
+                        <span className="font-mono text-[10px] text-paper/50">{p.region}</span>
+                      </div>
+                      <p className="mt-2 text-sm font-semibold">{p.title}</p>
+                      <p className="text-xs text-paper/60">
+                        {p.companyName} · {p.slots} slots
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-8">
-        <div className="mb-5 flex items-end justify-between">
+      {/* JOURNEY PIPELINE */}
+      <section className="py-10">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="font-mono text-xs uppercase tracking-wider text-ink-soft">
-              (a) Matching system
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brand">
+              (a) The full journey
             </p>
-            <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-balance">
+            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-balance sm:text-3xl">
+              From registration to a digital certificate
+            </h2>
+          </div>
+          <p className="hidden max-w-xs text-sm text-ink-soft sm:block">
+            Every placement is tracked step by step — approvals, logbook, evaluation and the final
+            experience record.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
+          {JOURNEY_STAGES.map((stage, i) => (
+            <div key={stage} className="bg-paper p-4">
+              <span className="font-mono text-xs font-semibold text-accent-strong">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <p className="mt-2 font-display text-sm font-bold leading-tight">{stage}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4">
+          <Link
+            to="/journey"
+            className="font-mono text-[11px] uppercase tracking-[0.14em] text-brand hover:text-ink"
+          >
+            Track your journey →
+          </Link>
+        </div>
+      </section>
+
+      {/* FIELDS GRID */}
+      <section className="py-10">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brand">
+              (b) Matching system
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-balance sm:text-3xl">
               Eight standardized fields
             </h2>
           </div>
@@ -122,15 +183,15 @@ function Home() {
             Course names differ by school. Fields do not.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px border border-line bg-line md:grid-cols-4">
           {FIELDS.map((f) => (
             <Link
               key={f.id}
               to="/listings"
               search={{ field: f.id, region: "all" }}
-              className="rounded-xl border border-line bg-glass/60 p-4 backdrop-blur-md transition-colors hover:border-brand/40"
+              className="group bg-paper p-5 transition-colors hover:bg-brand-soft"
             >
-              <span className="font-mono text-xs text-brand">{f.index}</span>
+              <span className="font-mono text-xs font-semibold text-brand">{f.index}</span>
               <p className="mt-3 font-display text-sm font-bold leading-tight">{f.name}</p>
               <p className="mt-2 text-xs text-ink-soft">{f.examples}</p>
             </Link>
@@ -138,27 +199,32 @@ function Home() {
         </div>
       </section>
 
-      <section className="py-8">
-        <div className="mb-5 flex items-end justify-between">
+      {/* LISTINGS PREVIEW */}
+      <section className="py-10">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="font-mono text-xs uppercase tracking-wider text-ink-soft">
-              (b) Listings preview
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brand">
+              (c) Listings preview
             </p>
-            <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-balance">
+            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-balance sm:text-3xl">
               Browse opportunities
             </h2>
           </div>
-          <Link to="/listings" className="font-mono text-xs text-ink-soft hover:text-ink">
-            {db.postings.length} results
+          <Link
+            to="/listings"
+            search={{ field: "all", region: "all" }}
+            className="font-mono text-xs text-ink-soft hover:text-ink"
+          >
+            {db.postings.length} results →
           </Link>
         </div>
-        <div className="overflow-hidden rounded-2xl border border-line shadow-sm ring-1 ring-black/5">
-          <div className="divide-y divide-line bg-glass/40 backdrop-blur-md">
+        <div className="border border-line">
+          <div className="divide-y divide-line bg-glass">
             {db.postings.slice(0, 3).map((p) => (
               <div key={p.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded bg-brand-soft/50 px-2 py-0.5 font-mono text-[10px] text-brand">
+                    <span className="bg-brand-soft px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-brand">
                       {fieldById(p.field).short}
                     </span>
                     <span className="font-mono text-xs text-ink-soft">{p.region}</span>
@@ -168,17 +234,18 @@ function Home() {
                 </div>
                 <div className="flex items-center gap-5 font-mono text-xs text-ink-soft">
                   <div>
-                    <span className="block text-[10px] uppercase tracking-wide">Slots</span>
+                    <span className="block text-[10px] uppercase tracking-[0.12em]">Slots</span>
                     {p.slots}
                   </div>
                   <div>
-                    <span className="block text-[10px] uppercase tracking-wide">Duration</span>
+                    <span className="block text-[10px] uppercase tracking-[0.12em]">Duration</span>
                     {p.duration}
                   </div>
                 </div>
                 <Link
                   to="/listings"
-                  className="rounded-md border border-line bg-paper/70 px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-brand/40"
+                  search={{ field: "all", region: "all" }}
+                  className="border border-ink bg-ink px-4 py-2 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-navy"
                 >
                   Apply
                 </Link>
