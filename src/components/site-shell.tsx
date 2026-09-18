@@ -27,7 +27,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
             >
               Home
             </Link>
-            <Link to="/listings" activeProps={{ className: navActive }} className={navLink}>
+            <Link to="/listings" search={{ field: "all", region: "all" }} activeProps={{ className: navActive }} className={navLink}>
               Opportunities
             </Link>
             <Link to="/journey" activeProps={{ className: navActive }} className={navLink}>
