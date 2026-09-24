@@ -77,7 +77,7 @@ function Journey() {
               <article key={a.id} className="border border-line bg-glass p-6 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-soft">
+                    <p className="text-sm text-ink-soft">
                       {a.companyName}
                     </p>
                     <h2 className="mt-1 font-display text-xl font-extrabold tracking-tight">
@@ -85,11 +85,11 @@ function Journey() {
                     </h2>
                   </div>
                   {a.stage === FINAL_STAGE ? (
-                    <span className="bg-accent-strong px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-navy">
+                    <span className="bg-accent-strong px-3 py-1.5 text-sm font-semibold text-navy">
                       Digital certificate issued
                     </span>
                   ) : (
-                    <span className="border border-line bg-brand-soft px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-brand">
+                    <span className="border border-line bg-brand-soft px-3 py-1.5 text-sm font-semibold text-brand">
                       Now: {JOURNEY_STAGES[a.stage]}
                     </span>
                   )}
@@ -111,7 +111,7 @@ function Journey() {
                         }
                       >
                         <span
-                          className={`font-mono text-[10px] font-semibold ${
+                          className={`text-sm font-semibold ${
                             current ? "text-accent-strong" : done ? "text-ink" : "text-ink-soft/60"
                           }`}
                         >
@@ -132,7 +132,7 @@ function Journey() {
                 {a.stage < FINAL_STAGE ? (
                   <button
                     onClick={() => advanceApplication(a.id)}
-                    className="mt-5 border border-ink bg-ink px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-navy"
+                    className="mt-5 border border-ink bg-ink px-4 py-2 text-sm font-semibold text-paper transition-colors hover:bg-navy"
                   >
                     Mark next step complete
                   </button>

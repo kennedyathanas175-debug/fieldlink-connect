@@ -120,5 +120,5 @@ function RegisterCompany() {
 
 function FieldError({ message }: { message: string | undefined }) {
   if (!message) return null;
-  return <p className="mt-1.5 font-mono text-[11px] text-destructive">{message}</p>;
+  return <p className="mt-1.5 text-sm text-destructive">{message}</p>;
 }
