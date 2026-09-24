@@ -72,7 +72,7 @@ function Listings() {
         <div className="border border-line">
           <div className="flex flex-wrap items-center gap-2 border-b border-line bg-paper px-4 py-3">
             <label className="flex items-center gap-2 border border-line bg-glass px-3 py-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+              <span className="text-sm text-ink-soft">
                 Field
               </span>
               <select
@@ -91,7 +91,7 @@ function Listings() {
               </select>
             </label>
             <label className="flex items-center gap-2 border border-line bg-glass px-3 py-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+              <span className="text-sm text-ink-soft">
                 Region
               </span>
               <select
@@ -107,7 +107,7 @@ function Listings() {
                 ))}
               </select>
             </label>
-            <span className="ml-auto font-mono text-xs text-ink-soft">
+            <span className="ml-auto text-xs text-ink-soft">
               {results.length} of {db.postings.length} shown
             </span>
           </div>
@@ -124,10 +124,10 @@ function Listings() {
                   <div key={p.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="bg-brand-soft px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-brand">
+                        <span className="bg-brand-soft px-2 py-0.5 text-sm text-brand">
                           {fieldById(p.field).short}
                         </span>
-                        <span className="font-mono text-xs text-ink-soft">{p.region}</span>
+                        <span className="text-xs text-ink-soft">{p.region}</span>
                       </div>
                       <p className="mt-1.5 font-display text-base font-bold">{p.title}</p>
                       <p className="text-sm text-ink-soft">{p.companyName}</p>
@@ -137,19 +137,19 @@ function Listings() {
                         </p>
                       ) : null}
                     </div>
-                    <div className="flex items-center gap-5 font-mono text-xs text-ink-soft">
+                    <div className="flex items-center gap-5 text-xs text-ink-soft">
                       <div>
-                        <span className="block text-[10px] uppercase tracking-[0.12em]">Slots</span>
+                        <span className="block text-[10px]">Slots</span>
                         {p.slots}
                       </div>
                       <div>
-                        <span className="block text-[10px] uppercase tracking-[0.12em]">
+                        <span className="block text-[10px]">
                           Duration
                         </span>
                         {p.duration}
                       </div>
                       <div>
-                        <span className="block text-[10px] uppercase tracking-[0.12em]">
+                        <span className="block text-[10px]">
                           Deadline
                         </span>
                         {formatDeadline(p.deadline)}
@@ -158,14 +158,14 @@ function Listings() {
                     {applied ? (
                       <Link
                         to="/journey"
-                        className="border border-line bg-accent-soft px-4 py-2 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink"
+                        className="border border-line bg-accent-soft px-4 py-2 text-center text-sm font-semibold text-ink"
                       >
                         Applied · Track
                       </Link>
                     ) : (
                       <button
                         onClick={() => apply(p.id)}
-                        className="border border-ink bg-ink px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-navy"
+                        className="border border-ink bg-ink px-4 py-2 text-sm font-semibold text-paper transition-colors hover:bg-navy"
                       >
                         Apply
                       </button>

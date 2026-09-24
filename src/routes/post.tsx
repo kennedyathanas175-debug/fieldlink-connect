@@ -60,7 +60,7 @@ function PostPlacement() {
         <section className="py-8">
           <Link
             to="/register-company"
-            className="inline-flex items-center bg-navy px-6 py-3.5 font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-brand"
+            className="inline-flex items-center bg-navy px-6 py-3.5 text-[12px] font-semibold text-paper transition-colors hover:bg-brand"
           >
             Register as a company / office
           </Link>
@@ -78,7 +78,7 @@ function PostPlacement() {
         />
         <section className="py-8">
           <div className="max-w-xl border border-line bg-glass p-6 shadow-sm">
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft">
+            <p className="text-sm text-ink-soft">
               Match result
             </p>
             <p className="mt-3 font-display text-5xl font-extrabold tracking-tight text-brand">
@@ -99,7 +99,7 @@ function PostPlacement() {
               </Link>
               <button
                 onClick={() => setMatchCount(null)}
-                className="border border-line px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:border-brand"
+                className="border border-line px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-brand"
               >
                 Post another
               </button>
@@ -227,5 +227,5 @@ function PostPlacement() {
 
 function FieldError({ message }: { message: string | undefined }) {
   if (!message) return null;
-  return <p className="mt-1.5 font-mono text-[11px] text-destructive">{message}</p>;
+  return <p className="mt-1.5 text-sm text-destructive">{message}</p>;
 }
