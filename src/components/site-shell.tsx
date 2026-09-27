@@ -53,11 +53,21 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
       <footer className="mt-16 border-t border-line bg-navy text-paper">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="grid size-7 place-items-center rounded-full bg-brand font-display text-xs font-extrabold text-brand-foreground">
-              F
-            </span>
-            <span className="font-display text-sm font-extrabold tracking-tight">FieldLink TZ</span>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/admin"
+              className="text-xs text-paper/60 transition-colors hover:text-paper"
+            >
+              Admin
+            </Link>
+            <div className="flex items-center gap-2.5">
+              <span className="grid size-7 place-items-center rounded-full bg-brand font-display text-xs font-extrabold text-brand-foreground">
+                F
+              </span>
+              <span className="font-display text-sm font-extrabold tracking-tight">
+                FieldLink TZ
+              </span>
+            </div>
           </div>
           <p className="text-xs text-paper/60">
             A public utility for field-placement matching · Tanzania
