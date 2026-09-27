@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as ListingsRouteImport } from './routes/listings'
 import { Route as PostRouteImport } from './routes/post'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RegisterCompanyRouteImport } from './routes/register-company'
 import { Route as RegisterStudentRouteImport } from './routes/register-student'
 
@@ -36,6 +37,11 @@ const PostRoute = PostRouteImport.update({
   path: '/post',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterCompanyRoute = RegisterCompanyRouteImport.update({
   id: '/register-company',
   path: '/register-company',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/journey': typeof JourneyRoute
   '/listings': typeof ListingsRoute
   '/post': typeof PostRoute
+  '/profile': typeof ProfileRoute
   '/register-company': typeof RegisterCompanyRoute
   '/register-student': typeof RegisterStudentRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/journey': typeof JourneyRoute
   '/listings': typeof ListingsRoute
   '/post': typeof PostRoute
+  '/profile': typeof ProfileRoute
   '/register-company': typeof RegisterCompanyRoute
   '/register-student': typeof RegisterStudentRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/journey': typeof JourneyRoute
   '/listings': typeof ListingsRoute
   '/post': typeof PostRoute
+  '/profile': typeof ProfileRoute
   '/register-company': typeof RegisterCompanyRoute
   '/register-student': typeof RegisterStudentRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/journey'
     | '/listings'
     | '/post'
+    | '/profile'
     | '/register-company'
     | '/register-student'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/journey'
     | '/listings'
     | '/post'
+    | '/profile'
     | '/register-company'
     | '/register-student'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/journey'
     | '/listings'
     | '/post'
+    | '/profile'
     | '/register-company'
     | '/register-student'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   JourneyRoute: typeof JourneyRoute
   ListingsRoute: typeof ListingsRoute
   PostRoute: typeof PostRoute
+  ProfileRoute: typeof ProfileRoute
   RegisterCompanyRoute: typeof RegisterCompanyRoute
   RegisterStudentRoute: typeof RegisterStudentRoute
 }
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register-company': {
       id: '/register-company'
       path: '/register-company'
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   JourneyRoute: JourneyRoute,
   ListingsRoute: ListingsRoute,
   PostRoute: PostRoute,
+  ProfileRoute: ProfileRoute,
   RegisterCompanyRoute: RegisterCompanyRoute,
   RegisterStudentRoute: RegisterStudentRoute,
 }
