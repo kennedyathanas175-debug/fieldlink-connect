@@ -133,8 +133,8 @@ function PostPlacement() {
     setErrors({});
     const fieldId = parsed.data.field as FieldId;
     addPosting({
-      companyId: company!.id,
-      companyName: company!.name,
+      companyId: activeCompany.id,
+      companyName: activeCompany.name,
       title: parsed.data.title,
       field: fieldId,
       slots: parsed.data.slots,
