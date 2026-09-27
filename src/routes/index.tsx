@@ -1,4 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Check, MapPin, Sparkles } from "lucide-react";
+import heroStudents from "@/assets/hero-students.jpg";
+import { AiMatch } from "@/components/ai-match";
 import { SiteShell } from "@/components/site-shell";
 import { FIELDS, JOURNEY_STAGES, REGIONS, fieldById, useDB } from "@/lib/fieldlink";
 
@@ -6,17 +9,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "FieldLink TZ — Internships and field placements by field of study" },
-      {
-        name: "description",
-        content:
-          "FieldLink TZ connects students from any college or university in Tanzania with internship and field-placement openings, matched by field of study, with a full journey from application to digital certificate.",
-      },
+      { name: "description", content: "Students from any Tanzanian institution find placements by field, build practical experience and connect professionally." },
       { property: "og:title", content: "FieldLink TZ — Field placements across Tanzania" },
-      {
-        property: "og:description",
-        content:
-          "Students from any institution register once and are matched to internship openings by field of study, not by school.",
-      },
+      { property: "og:description", content: "Find the right field placement, follow every step and build a professional experience record." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,
@@ -28,231 +25,94 @@ function Home() {
 
   return (
     <SiteShell>
-      {/* HERO — dark navy panel */}
-      <section className="py-10">
-        <div className="relative overflow-hidden bg-navy text-paper">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-[0.06]"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(90deg, white 0 1px, transparent 1px 80px), repeating-linear-gradient(0deg, white 0 1px, transparent 1px 80px)",
-            }}
-          />
-          <div className="relative grid gap-10 p-8 sm:p-12 md:grid-cols-12">
-            <div className="animate-rise md:col-span-7">
-              <p className="mb-5 inline-flex items-center gap-2 border border-paper/20 px-3 py-1 text-sm text-paper/70">
-                <span className="size-1.5 bg-accent-strong" /> Nationwide field-placement matching
-              </p>
-              <h1 className="max-w-[16ch] font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-balance sm:text-6xl">
-                Matched by your <span className="text-accent-strong">field of study</span>, not your
-                institution.
-              </h1>
-              <p className="mt-6 max-w-[48ch] text-base leading-relaxed text-paper/70 text-pretty">
-                FieldLink TZ connects students from any college or university with internship and
-                field-placement (mafunzo kwa vitendo) openings at companies and offices across
-                Tanzania — then follows you all the way to a digital certificate.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/register-student"
-                  className="inline-flex items-center bg-accent-strong px-6 py-3.5 text-[12px] font-semibold text-navy transition-colors hover:bg-accent-strong/90"
-                >
-                  Register as a Student
-                </Link>
-                <Link
-                  to="/register-company"
-                  className="inline-flex items-center border border-paper/30 px-6 py-3.5 text-[12px] font-semibold text-paper transition-colors hover:bg-paper hover:text-navy"
-                >
-                  Post an Opportunity
-                </Link>
-              </div>
-              <div className="mt-10 grid max-w-md grid-cols-3 divide-x divide-paper/15 border border-paper/15">
-                <div className="px-4 py-4">
-                  <p className="text-2xl font-medium tabular-nums text-paper">
-                    {db.students.length.toLocaleString()}
-                  </p>
-                  <p className="mt-1 text-sm text-paper/60">
-                    Students registered
-                  </p>
-                </div>
-                <div className="px-4 py-4">
-                  <p className="text-2xl font-medium tabular-nums text-paper">
-                    {db.postings.length.toLocaleString()}
-                  </p>
-                  <p className="mt-1 text-sm text-paper/60">
-                    Postings published
-                  </p>
-                </div>
-                <div className="px-4 py-4">
-                  <p className="text-2xl font-medium tabular-nums text-paper">
-                    {REGIONS.length}
-                  </p>
-                  <p className="mt-1 text-sm text-paper/60">
-                    Regions covered
-                  </p>
-                </div>
-              </div>
-            </div>
+      <section className="grid min-h-[650px] items-center gap-10 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:py-14">
+        <div className="animate-rise py-8">
+          <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-2 text-sm font-semibold text-brand">
+            <Sparkles size={16} /> Nafasi za mafunzo Tanzania nzima
+          </span>
+          <h1 className="mt-6 max-w-[14ch] font-display text-5xl font-semibold leading-[1.04] text-balance sm:text-7xl">
+            Your skills deserve the right place to grow.
+          </h1>
+          <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-ink-soft sm:text-lg">
+            FieldLink TZ connects students from every college and university with practical training, mentors and organisations — based on what you study, not where you study.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/register-student" className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-brand-foreground transition-colors hover:bg-navy">Create your profile <ArrowRight size={17} /></Link>
+            <Link to="/listings" search={{ field: "all", region: "all" }} className="inline-flex items-center rounded-full border border-line px-6 py-3.5 text-sm font-semibold transition-colors hover:border-brand hover:text-brand">Explore opportunities</Link>
+          </div>
+          <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-ink-soft">
+            <span><strong className="text-xl text-ink">{db.students.length}</strong> students</span>
+            <span><strong className="text-xl text-ink">{db.postings.length}</strong> open placements</span>
+            <span><strong className="text-xl text-ink">{REGIONS.length}</strong> regions</span>
+          </div>
+        </div>
 
-            <div className="animate-rise md:col-span-5">
-              <div className="border border-paper/15 bg-paper/[0.04] p-4">
-                <div className="flex items-center justify-between border-b border-paper/15 px-1 pb-3">
-                  <p className="text-sm text-paper/60">
-                    Now on the board
-                  </p>
-                  <span className="bg-accent-strong px-2 py-0.5 text-sm font-semibold text-navy">
-                    LIVE
-                  </span>
-                </div>
-                <div className="mt-3 space-y-2.5">
-                  {latest.map((p) => (
-                    <Link
-                      key={p.id}
-                      to="/listings"
-                      search={{ field: "all", region: "all" }}
-                      className="block border border-paper/10 bg-paper/[0.05] p-3 transition-colors hover:border-accent-strong/60"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="bg-paper/10 px-2 py-0.5 text-sm text-accent-strong">
-                          {fieldById(p.field).short}
-                        </span>
-                        <span className="text-sm text-paper/50">{p.region}</span>
-                      </div>
-                      <p className="mt-2 text-sm font-semibold">{p.title}</p>
-                      <p className="text-xs text-paper/60">
-                        {p.companyName} · {p.slots} slots
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <div className="relative min-h-[540px] overflow-hidden rounded-[2rem]">
+          <img src={heroStudents} alt="Tanzanian students learning with a field mentor" width={1280} height={1024} className="absolute inset-0 size-full object-cover" />
+          <div className="absolute inset-x-5 bottom-5 rounded-2xl bg-glass/90 p-5 backdrop-blur-md sm:inset-x-auto sm:right-5 sm:max-w-xs">
+            <p className="font-display text-lg font-semibold">One profile, a growing career.</p>
+            <p className="mt-1 text-sm leading-relaxed text-ink-soft">Connect your LinkedIn, share field work and build an experience record employers can trust.</p>
+            <Link to="/profile" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand">Build your profile <ArrowRight size={15} /></Link>
           </div>
         </div>
       </section>
 
-      {/* JOURNEY PIPELINE */}
-      <section className="py-10">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-sm text-brand">
-              (a) The full journey
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-balance sm:text-3xl">
-              From registration to a digital certificate
-            </h2>
-          </div>
-          <p className="hidden max-w-xs text-sm text-ink-soft sm:block">
-            Every placement is tracked step by step — approvals, logbook, evaluation and the final
-            experience record.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
-          {JOURNEY_STAGES.map((stage, i) => (
-            <div key={stage} className="bg-paper p-4">
-              <span className="text-xs font-semibold text-accent-strong">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <p className="mt-2 font-display text-sm font-bold leading-tight">{stage}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4">
-          <Link
-            to="/journey"
-            className="text-sm text-brand hover:text-ink"
-          >
-            Track your journey →
-          </Link>
-        </div>
+      <section className="py-12 sm:py-16">
+        <AiMatch />
       </section>
 
-      {/* FIELDS GRID */}
-      <section className="py-10">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-sm text-brand">
-              (b) Matching system
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-balance sm:text-3xl">
-              Eight standardized fields
-            </h2>
-          </div>
-          <p className="hidden text-sm text-ink-soft sm:block">
-            Course names differ by school. Fields do not.
-          </p>
+      <section className="grid gap-10 py-14 lg:grid-cols-[0.75fr_1.25fr]">
+        <div>
+          <p className="text-sm font-semibold text-brand">Built around your field</p>
+          <h2 className="mt-3 font-display text-4xl font-semibold text-balance">Different course names. Eight clear pathways.</h2>
+          <p className="mt-4 text-sm leading-relaxed text-ink-soft">Select the field closest to your course and see placements that match your knowledge.</p>
         </div>
-        <div className="grid grid-cols-2 gap-px border border-line bg-line md:grid-cols-4">
-          {FIELDS.map((f) => (
-            <Link
-              key={f.id}
-              to="/listings"
-              search={{ field: f.id, region: "all" }}
-              className="group bg-paper p-5 transition-colors hover:bg-brand-soft"
-            >
-              <span className="text-xs font-semibold text-brand">{f.index}</span>
-              <p className="mt-3 font-display text-sm font-bold leading-tight">{f.name}</p>
-              <p className="mt-2 text-xs text-ink-soft">{f.examples}</p>
+        <div className="grid sm:grid-cols-2">
+          {FIELDS.map((field) => (
+            <Link key={field.id} to="/listings" search={{ field: field.id, region: "all" }} className="group flex gap-4 border-b border-line py-5 sm:px-5 sm:[&:nth-last-child(-n+2)]:border-b-0">
+              <span className="text-sm font-semibold text-brand">{field.index}</span>
+              <div><h3 className="font-display text-lg font-semibold group-hover:text-brand">{field.name}</h3><p className="mt-1 text-xs leading-relaxed text-ink-soft">{field.examples}</p></div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* LISTINGS PREVIEW */}
-      <section className="py-10">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <section className="-mx-5 bg-brand-soft px-5 py-16 sm:py-20">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <p className="text-sm text-brand">
-              (c) Listings preview
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-balance sm:text-3xl">
-              Browse opportunities
-            </h2>
+            <p className="text-sm font-semibold text-brand">Your placement journey</p>
+            <h2 className="mt-3 font-display text-4xl font-semibold text-balance">From first application to proof of experience.</h2>
+            <p className="mt-4 text-sm leading-relaxed text-ink-soft">Know what comes next. Your institution, company and supervisor move through one clear process.</p>
+            <Link to="/journey" className="mt-6 inline-flex items-center gap-2 rounded-full bg-navy px-5 py-3 text-sm font-semibold text-paper">Track my journey <ArrowRight size={16} /></Link>
           </div>
-          <Link
-            to="/listings"
-            search={{ field: "all", region: "all" }}
-            className="text-xs text-ink-soft hover:text-ink"
-          >
-            {db.postings.length} results →
-          </Link>
-        </div>
-        <div className="border border-line">
-          <div className="divide-y divide-line bg-glass">
-            {db.postings.slice(0, 3).map((p) => (
-              <div key={p.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="bg-brand-soft px-2 py-0.5 text-sm text-brand">
-                      {fieldById(p.field).short}
-                    </span>
-                    <span className="text-xs text-ink-soft">{p.region}</span>
-                  </div>
-                  <p className="mt-1.5 font-display text-base font-bold">{p.title}</p>
-                  <p className="text-sm text-ink-soft">{p.companyName}</p>
-                </div>
-                <div className="flex items-center gap-5 text-xs text-ink-soft">
-                  <div>
-                    <span className="block text-[10px]">Slots</span>
-                    {p.slots}
-                  </div>
-                  <div>
-                    <span className="block text-[10px]">Duration</span>
-                    {p.duration}
-                  </div>
-                </div>
-                <Link
-                  to="/listings"
-                  search={{ field: "all", region: "all" }}
-                  className="border border-ink bg-ink px-4 py-2 text-center text-sm font-semibold text-paper transition-colors hover:bg-navy"
-                >
-                  Apply
-                </Link>
-              </div>
+          <ol className="grid gap-x-8 sm:grid-cols-2">
+            {JOURNEY_STAGES.map((stage, index) => (
+              <li key={stage} className="flex items-center gap-3 border-b border-line py-3.5"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-glass text-xs font-semibold text-brand">{index + 1}</span><span className="text-sm font-medium">{stage}</span></li>
             ))}
-          </div>
+          </ol>
         </div>
+      </section>
+
+      <section className="py-16 sm:py-20">
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <div><p className="text-sm font-semibold text-brand">Open now</p><h2 className="mt-2 font-display text-4xl font-semibold">Fresh opportunities</h2></div>
+          <Link to="/listings" search={{ field: "all", region: "all" }} className="inline-flex items-center gap-2 text-sm font-semibold text-brand">See all opportunities <ArrowRight size={16} /></Link>
+        </div>
+        <div className="mt-8 divide-y divide-line border-y border-line">
+          {latest.map((posting) => (
+            <Link key={posting.id} to="/listings" search={{ field: posting.field, region: "all" }} className="group grid gap-3 py-6 sm:grid-cols-[1fr_0.7fr_auto] sm:items-center">
+              <div><span className="text-xs font-semibold text-brand">{fieldById(posting.field).short}</span><h3 className="mt-1 font-display text-xl font-semibold group-hover:text-brand">{posting.title}</h3><p className="text-sm text-ink-soft">{posting.companyName}</p></div>
+              <div className="flex gap-5 text-sm text-ink-soft"><span className="flex items-center gap-1"><MapPin size={14} />{posting.region}</span><span className="flex items-center gap-1"><Check size={14} />{posting.slots} slots</span></div>
+              <ArrowRight className="text-brand" />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-6 rounded-[2rem] bg-navy px-6 py-12 text-center text-paper sm:px-12 sm:py-16">
+        <h2 className="font-display text-4xl font-semibold">Have a place where students can learn?</h2>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-paper/70">Register your organisation, publish a placement and immediately see how many students match your field.</p>
+        <Link to="/register-company" className="mt-7 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-brand-foreground">Post an opportunity <ArrowRight size={16} /></Link>
       </section>
     </SiteShell>
   );

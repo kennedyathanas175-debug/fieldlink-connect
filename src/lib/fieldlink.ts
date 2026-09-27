@@ -142,7 +142,17 @@ export interface Student {
   phone: string;
   /** Object URL of the uploaded ID photo. Never shown to companies. */
   idPhotoName: string;
+  linkedinUrl: string;
+  bio: string;
+  workSamples: WorkSample[];
   createdAt: number;
+}
+
+export interface WorkSample {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
 }
 
 export interface Company {
@@ -331,6 +341,9 @@ const seedStudents: Student[] = Array.from({ length: 42 }, (_, i) => ({
   region: REGIONS[i % REGIONS.length]!,
   phone: "+255 7XX XXX XXX",
   idPhotoName: "verified.jpg",
+  linkedinUrl: "",
+  bio: "",
+  workSamples: [],
   createdAt: Date.now(),
 }));
 
@@ -368,6 +381,35 @@ export function addStudent(input: Omit<Student, "id" | "createdAt">) {
   return student;
 }
 
+export function updateStudentProfile(
+  studentId: string,
+  input: Pick<Student, "linkedinUrl" | "bio">,
+) {
+  db = {
+    ...db,
+    students: db.students.map((student) =>
+      student.id === studentId ? { ...student, ...input } : student,
+    ),
+  };
+  emit();
+}
+
+export function addWorkSample(
+  studentId: string,
+  input: Omit<WorkSample, "id">,
+) {
+  const sample = { ...input, id: uid() };
+  db = {
+    ...db,
+    students: db.students.map((student) =>
+      student.id === studentId
+        ? { ...student, workSamples: [...student.workSamples, sample] }
+        : student,
+    ),
+  };
+  emit();
+}
+
 export function addCompany(input: Omit<Company, "id" | "createdAt">) {
   const company: Company = { ...input, id: uid(), createdAt: Date.now() };
   db = { ...db, companies: [...db.companies, company] };
@@ -388,9 +430,10 @@ export function countStudentsInField(field: FieldId) {
 }
 
 export function addApplication(posting: Posting, studentId: string) {
-  if (db.applications.some((a) => a.postingId === posting.id && a.studentId === studentId)) {
-    return db.applications.find((a) => a.postingId === posting.id && a.studentId === studentId)!;
-  }
+  const existing = db.applications.find(
+    (application) => application.postingId === posting.id && application.studentId === studentId,
+  );
+  if (existing) return existing;
   const application: Application = {
     id: uid(),
     postingId: posting.id,
