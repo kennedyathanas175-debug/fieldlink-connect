@@ -65,6 +65,7 @@ function RegisterStudent() {
       linkedinUrl: "",
       bio: "",
       workSamples: [],
+      verified: false,
     });
     navigate({ to: "/listings", search: { field: "all", region: "all" } });
   }
