@@ -430,9 +430,10 @@ export function countStudentsInField(field: FieldId) {
 }
 
 export function addApplication(posting: Posting, studentId: string) {
-  if (db.applications.some((a) => a.postingId === posting.id && a.studentId === studentId)) {
-    return db.applications.find((a) => a.postingId === posting.id && a.studentId === studentId)!;
-  }
+  const existing = db.applications.find(
+    (application) => application.postingId === posting.id && application.studentId === studentId,
+  );
+  if (existing) return existing;
   const application: Application = {
     id: uid(),
     postingId: posting.id,

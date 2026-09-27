@@ -11,7 +11,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center bg-navy font-display text-sm font-extrabold text-accent-strong">
+            <span className="grid size-9 place-items-center rounded-full bg-brand font-display text-sm font-extrabold text-brand-foreground">
               F
             </span>
             <span className="font-display text-lg font-extrabold tracking-tight">
@@ -42,7 +42,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </nav>
           <Link
             to="/register-student"
-            className="bg-accent-strong px-4 py-2 text-sm font-semibold text-navy transition-colors hover:bg-accent-strong/90"
+            className="rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition-colors hover:bg-navy"
           >
             Register
           </Link>
@@ -54,7 +54,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <footer className="mt-16 border-t border-line bg-navy text-paper">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-7 place-items-center bg-accent-strong font-display text-xs font-extrabold text-navy">
+            <span className="grid size-7 place-items-center rounded-full bg-brand font-display text-xs font-extrabold text-brand-foreground">
               F
             </span>
             <span className="font-display text-sm font-extrabold tracking-tight">FieldLink TZ</span>
@@ -93,10 +93,10 @@ export function PageHeading({
 }
 
 export const fieldStyles = {
-  panel: "border border-line bg-glass p-6 shadow-sm",
+  panel: "rounded-2xl border border-line bg-glass p-6 shadow-sm",
   label: "text-sm text-ink-soft",
   input:
-    "mt-1.5 w-full rounded-sm border border-line bg-paper px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/60 focus:border-brand",
+    "mt-1.5 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/60 focus:border-brand",
   submit:
-    "inline-flex items-center bg-navy px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-brand",
+    "inline-flex items-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground transition-colors hover:bg-navy",
 };

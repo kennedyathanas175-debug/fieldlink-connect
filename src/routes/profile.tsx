@@ -37,11 +37,12 @@ function Profile() {
       </SiteShell>
     );
   }
+  const studentId = student.id;
 
   function saveProfile(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const values = Object.fromEntries(new FormData(e.currentTarget));
-    updateStudentProfile(student.id, {
+    updateStudentProfile(studentId, {
       linkedinUrl: String(values["linkedinUrl"] ?? ""),
       bio: String(values["bio"] ?? ""),
     });
@@ -54,7 +55,7 @@ function Profile() {
     const values = Object.fromEntries(new FormData(form));
     const title = String(values["title"] ?? "").trim();
     if (!title) return;
-    addWorkSample(student.id, {
+    addWorkSample(studentId, {
       title,
       description: String(values["description"] ?? "").trim(),
       link: String(values["link"] ?? "").trim(),
