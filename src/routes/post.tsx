@@ -1,7 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import { z } from "zod";
 import { SiteShell, PageHeading, fieldStyles } from "@/components/site-shell";
+import { draftPosting } from "@/lib/ai.functions";
 import {
   FIELDS,
   REGIONS,
@@ -48,6 +51,12 @@ function PostPlacement() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [matchCount, setMatchCount] = useState<number | null>(null);
   const [postedTitle, setPostedTitle] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [field, setField] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const writeDraft = useServerFn(draftPosting);
 
   if (!company) {
     return (
@@ -138,6 +147,24 @@ function PostPlacement() {
     void navigate;
   }
 
+  async function helpWrite() {
+    if (title.trim().length < 3) {
+      setAiError("Enter the posting title first.");
+      return;
+    }
+    setAiLoading(true);
+    setAiError("");
+    try {
+      const result = await writeDraft({ data: { title, company: company.name, notes: description } });
+      setDescription(result.description);
+      setField(result.field);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "AI could not write a draft.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   return (
     <SiteShell>
       <PageHeading
@@ -153,6 +180,8 @@ function PostPlacement() {
               <span className={fieldStyles.label}>Posting title</span>
               <input
                 name="title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
                 placeholder="e.g. Civil Engineering Intern"
                 className={fieldStyles.input}
               />
@@ -161,7 +190,7 @@ function PostPlacement() {
 
             <label className="block">
               <span className={fieldStyles.label}>Field required</span>
-              <select name="field" defaultValue="" className={fieldStyles.input}>
+              <select name="field" value={field} onChange={(event) => setField(event.target.value)} className={fieldStyles.input}>
                 <option value="" disabled>
                   Select a field
                 </option>
@@ -203,14 +232,22 @@ function PostPlacement() {
             </label>
 
             <label className="block sm:col-span-2">
-              <span className={fieldStyles.label}>Short description (optional)</span>
+              <span className="flex items-center justify-between gap-3">
+                <span className={fieldStyles.label}>Short description (optional)</span>
+                <button type="button" onClick={helpWrite} disabled={aiLoading} className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand disabled:opacity-60">
+                  <Sparkles size={14} /> {aiLoading ? "Writing…" : "Write with AI"}
+                </button>
+              </span>
               <textarea
                 name="description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
                 rows={4}
                 placeholder="What will the student do? Any requirements?"
                 className={fieldStyles.input}
               />
               <FieldError message={errors["description"]} />
+              {aiError ? <p className="mt-1.5 text-sm text-destructive">{aiError}</p> : null}
             </label>
           </div>
 
