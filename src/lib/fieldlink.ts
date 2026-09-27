@@ -145,6 +145,8 @@ export interface Student {
   linkedinUrl: string;
   bio: string;
   workSamples: WorkSample[];
+  /** Admin-verified via the student ID photo check. */
+  verified: boolean;
   createdAt: number;
 }
 
@@ -344,6 +346,7 @@ const seedStudents: Student[] = Array.from({ length: 42 }, (_, i) => ({
   linkedinUrl: "",
   bio: "",
   workSamples: [],
+  verified: true,
   createdAt: Date.now(),
 }));
 
@@ -454,6 +457,51 @@ export function advanceApplication(id: string) {
     applications: db.applications.map((a) =>
       a.id === id ? { ...a, stage: Math.min(a.stage + 1, FINAL_STAGE) } : a,
     ),
+  };
+  emit();
+}
+
+// ----- Admin actions -----
+
+export function setApplicationStage(id: string, stage: number) {
+  db = {
+    ...db,
+    applications: db.applications.map((a) =>
+      a.id === id ? { ...a, stage: Math.max(0, Math.min(stage, FINAL_STAGE)) } : a,
+    ),
+  };
+  emit();
+}
+
+export function setStudentVerified(studentId: string, verified: boolean) {
+  db = {
+    ...db,
+    students: db.students.map((s) => (s.id === studentId ? { ...s, verified } : s)),
+  };
+  emit();
+}
+
+export function removeStudent(studentId: string) {
+  db = {
+    ...db,
+    students: db.students.filter((s) => s.id !== studentId),
+  };
+  emit();
+}
+
+export function removePosting(postingId: string) {
+  db = {
+    ...db,
+    postings: db.postings.filter((p) => p.id !== postingId),
+  };
+  emit();
+}
+
+export function removeCompany(companyId: string) {
+  db = {
+    ...db,
+    companies: db.companies.filter((c) => c.id !== companyId),
+    postings: db.postings.filter((p) => p.companyId !== companyId),
   };
   emit();
 }
