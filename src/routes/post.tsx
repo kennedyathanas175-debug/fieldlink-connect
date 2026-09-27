@@ -77,6 +77,7 @@ function PostPlacement() {
       </SiteShell>
     );
   }
+  const activeCompany = company;
 
   if (matchCount !== null) {
     return (
@@ -155,7 +156,7 @@ function PostPlacement() {
     setAiLoading(true);
     setAiError("");
     try {
-      const result = await writeDraft({ data: { title, company: company.name, notes: description } });
+      const result = await writeDraft({ data: { title, company: activeCompany.name, notes: description } });
       setDescription(result.description);
       setField(result.field);
     } catch (error) {
