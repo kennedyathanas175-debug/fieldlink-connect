@@ -62,6 +62,9 @@ function RegisterStudent() {
       region: parsed.data.region,
       phone: parsed.data.phone,
       idPhotoName: idPhoto.name,
+      linkedinUrl: "",
+      bio: "",
+      workSamples: [],
     });
     navigate({ to: "/listings", search: { field: "all", region: "all" } });
   }

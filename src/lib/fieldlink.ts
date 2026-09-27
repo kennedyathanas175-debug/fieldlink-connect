@@ -142,7 +142,17 @@ export interface Student {
   phone: string;
   /** Object URL of the uploaded ID photo. Never shown to companies. */
   idPhotoName: string;
+  linkedinUrl: string;
+  bio: string;
+  workSamples: WorkSample[];
   createdAt: number;
+}
+
+export interface WorkSample {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
 }
 
 export interface Company {
@@ -331,6 +341,9 @@ const seedStudents: Student[] = Array.from({ length: 42 }, (_, i) => ({
   region: REGIONS[i % REGIONS.length]!,
   phone: "+255 7XX XXX XXX",
   idPhotoName: "verified.jpg",
+  linkedinUrl: "",
+  bio: "",
+  workSamples: [],
   createdAt: Date.now(),
 }));
 
@@ -366,6 +379,35 @@ export function addStudent(input: Omit<Student, "id" | "createdAt">) {
   currentStudentId = student.id;
   emit();
   return student;
+}
+
+export function updateStudentProfile(
+  studentId: string,
+  input: Pick<Student, "linkedinUrl" | "bio">,
+) {
+  db = {
+    ...db,
+    students: db.students.map((student) =>
+      student.id === studentId ? { ...student, ...input } : student,
+    ),
+  };
+  emit();
+}
+
+export function addWorkSample(
+  studentId: string,
+  input: Omit<WorkSample, "id">,
+) {
+  const sample = { ...input, id: uid() };
+  db = {
+    ...db,
+    students: db.students.map((student) =>
+      student.id === studentId
+        ? { ...student, workSamples: [...student.workSamples, sample] }
+        : student,
+    ),
+  };
+  emit();
 }
 
 export function addCompany(input: Omit<Company, "id" | "createdAt">) {

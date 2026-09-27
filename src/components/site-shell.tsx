@@ -33,6 +33,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <Link to="/journey" activeProps={{ className: navActive }} className={navLink}>
               My journey
             </Link>
+            <Link to="/profile" activeProps={{ className: navActive }} className={navLink}>
+              My profile
+            </Link>
             <Link to="/post" activeProps={{ className: navActive }} className={navLink}>
               Post a placement
             </Link>
