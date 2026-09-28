@@ -142,6 +142,8 @@ export interface Student {
   phone: string;
   /** Object URL of the uploaded ID photo. Never shown to companies. */
   idPhotoName: string;
+  /** Preview URL of the ID photo for admin review only. */
+  idPhotoUrl?: string;
   linkedinUrl: string;
   bio: string;
   workSamples: WorkSample[];

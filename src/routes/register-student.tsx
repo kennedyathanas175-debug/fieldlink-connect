@@ -62,6 +62,7 @@ function RegisterStudent() {
       region: parsed.data.region,
       phone: parsed.data.phone,
       idPhotoName: idPhoto.name,
+      idPhotoUrl: URL.createObjectURL(idPhoto),
       linkedinUrl: "",
       bio: "",
       workSamples: [],
