@@ -104,10 +104,82 @@ function Admin() {
   return <Dashboard />;
 }
 
+function StudentDetails({ id, onClose }: { id: string; onClose: () => void }) {
+  const db = useDB();
+  const s = db.students.find((x) => x.id === id);
+  if (!s) return null;
+  const apps = db.applications.filter((a) => a.studentId === s.id);
+  const row = (label: string, value: React.ReactNode) => (
+    <div className="flex justify-between gap-4 border-b border-line py-2 text-sm">
+      <span className="text-ink-soft">{label}</span>
+      <span className="text-right font-semibold">{value || "—"}</span>
+    </div>
+  );
+  return (
+    <div className="rounded-2xl border border-line bg-glass p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-display text-2xl font-semibold">{s.fullName}</h3>
+          <p className="text-sm text-ink-soft">
+            Registered {new Date(s.createdAt).toLocaleDateString("en-GB")} ·{" "}
+            {s.verified ? "Verified" : "Awaiting approval"}
+          </p>
+        </div>
+        <button onClick={onClose} className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold">
+          Close
+        </button>
+      </div>
+      <div className="mt-4 grid gap-6 md:grid-cols-2">
+        <div>
+          {row("Institution", s.institution)}
+          {row("Field", fieldById(s.field).name)}
+          {row("Year", s.year)}
+          {row("Region", s.region)}
+          {row("Phone", s.phone)}
+          {row(
+            "LinkedIn",
+            s.linkedinUrl ? (
+              <a href={s.linkedinUrl} target="_blank" rel="noreferrer" className="text-accent-strong">Open</a>
+            ) : null,
+          )}
+          {row("Work samples", s.workSamples.length)}
+          {row("Applications", apps.map((a) => a.postingTitle).join(", "))}
+          {s.bio ? <p className="mt-3 text-sm text-ink-soft">{s.bio}</p> : null}
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-semibold text-ink-soft">Student ID photo (admin only)</p>
+          {s.idPhotoUrl ? (
+            <img src={s.idPhotoUrl} alt={`ID of ${s.fullName}`} className="max-h-72 w-full rounded-xl border border-line object-contain" />
+          ) : (
+            <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-ink-soft">
+              File on record: {s.idPhotoName}
+            </p>
+          )}
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => setStudentVerified(s.id, true)}
+              className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground"
+            >
+              Approve
+            </button>
+            <button
+              onClick={() => setStudentVerified(s.id, false)}
+              className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-destructive"
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Dashboard() {
   const db = useDB();
   const [tab, setTab] = useState<Tab>("overview");
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   function askRemove(id: string) {
     setConfirmedId(id);
@@ -309,9 +381,12 @@ function Dashboard() {
       {tab === "students" ? (
         <section className="space-y-3 pb-12">
           <p className="text-sm text-ink-soft">
-            Verify students against their uploaded ID photo. Unverified students are
-            flagged until you check them.
+            Open a student's details, compare them with the ID photo, then approve or
+            reject. Unverified students are flagged until you check them.
           </p>
+          {detailId ? (
+            <StudentDetails id={detailId} onClose={() => setDetailId(null)} />
+          ) : null}
           <div className="overflow-x-auto rounded-2xl border border-line bg-glass">
             <table className="w-full min-w-[720px] text-sm">
               <thead className="bg-paper text-left text-xs text-ink-soft">
@@ -346,6 +421,12 @@ function Dashboard() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setDetailId(s.id)}
+                          className="rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground"
+                        >
+                          Details
+                        </button>
                         <button
                           onClick={() => setStudentVerified(s.id, !s.verified)}
                           className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold"
