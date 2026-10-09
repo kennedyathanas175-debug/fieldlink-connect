@@ -1,5 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
+
+function AccountLink() {
+  const { user } = useAuth();
+  return (
+    <Link to="/auth" className={navLink}>
+      {user ? "Account" : "Sign in"}
+    </Link>
+  );
+}
 
 const navLink =
   "text-sm text-ink-soft transition-colors hover:text-ink";
@@ -40,12 +50,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
               Post a placement
             </Link>
           </nav>
-          <Link
-            to="/register-student"
-            className="rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition-colors hover:bg-navy"
-          >
-            Register
-          </Link>
+          <div className="flex items-center gap-3">
+            <AccountLink />
+            <Link
+              to="/register-student"
+              className="rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition-colors hover:bg-navy"
+            >
+              Register
+            </Link>
+          </div>
         </div>
       </header>
 
