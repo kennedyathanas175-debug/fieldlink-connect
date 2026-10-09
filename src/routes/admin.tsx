@@ -18,11 +18,9 @@ import {
 /**
  * Admin dashboard. The data behind it is the shared FieldLink store, so the
  * management actions here move with the same backend swap as the rest of the
- * app. The passcode gate is a placeholder for real admin auth.
+ * app. Access requires the super_admin role from the roles table.
  */
-
-const ADMIN_PASSCODE = "fieldlink-admin";
-const UNLOCK_KEY = "fieldlink-admin-unlocked";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -54,48 +52,34 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 function Admin() {
-  const [unlocked, setUnlocked] = useState(
-    () => sessionStorage.getItem(UNLOCK_KEY) === "1",
-  );
-  const [passcode, setPasscode] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const { user, loading, hasRole } = useAuth();
 
-  function unlock(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (passcode.trim() === ADMIN_PASSCODE) {
-      sessionStorage.setItem(UNLOCK_KEY, "1");
-      setUnlocked(true);
-      setError(null);
-    } else {
-      setError("Wrong passcode. Try again.");
-    }
+  if (loading) {
+    return (
+      <SiteShell>
+        <PageHeading eyebrow="Admin" title="Checking access…" />
+      </SiteShell>
+    );
   }
 
-  if (!unlocked) {
+  if (!user || !hasRole("super_admin")) {
     return (
       <SiteShell>
         <PageHeading
           eyebrow="Admin"
-          title="Admin sign-in"
-          intro="Enter the admin passcode to open the dashboard."
+          title="Admins only"
+          intro={
+            user
+              ? "Your account does not have Super Admin access."
+              : "Sign in with a Super Admin account to open the dashboard."
+          }
         />
         <section className="py-10">
-          <form onSubmit={unlock} className={`${fieldStyles.panel} max-w-sm`}>
-            <label className="block">
-              <span className={fieldStyles.label}>Passcode</span>
-              <input
-                type="password"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                autoFocus
-                className={fieldStyles.input}
-              />
-            </label>
-            {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
-            <button type="submit" className={`${fieldStyles.submit} mt-5`}>
-              Unlock dashboard
-            </button>
-          </form>
+          {!user ? (
+            <Link to="/auth" className={fieldStyles.submit}>
+              Sign in
+            </Link>
+          ) : null}
         </section>
       </SiteShell>
     );
