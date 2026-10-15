@@ -208,6 +208,7 @@ export type Database = {
           field: string
           id: string
           organization_id: string
+          organization_name: string
           region: string
           slots: number
           title: string
@@ -220,6 +221,7 @@ export type Database = {
           field: string
           id?: string
           organization_id: string
+          organization_name?: string
           region: string
           slots?: number
           title: string
@@ -232,6 +234,7 @@ export type Database = {
           field?: string
           id?: string
           organization_id?: string
+          organization_name?: string
           region?: string
           slots?: number
           title?: string
@@ -255,8 +258,10 @@ export type Database = {
           field: string
           full_name: string
           id: string
+          id_photo_name: string
           id_photo_path: string | null
           institution_id: string | null
+          institution_name: string
           linkedin_url: string
           phone: string
           placement_status: string
@@ -265,6 +270,7 @@ export type Database = {
           user_id: string
           verified: boolean
           visible_to_other_institutions: boolean
+          work_samples: Json
           year: string
         }
         Insert: {
@@ -275,8 +281,10 @@ export type Database = {
           field: string
           full_name: string
           id?: string
+          id_photo_name?: string
           id_photo_path?: string | null
           institution_id?: string | null
+          institution_name?: string
           linkedin_url?: string
           phone: string
           placement_status?: string
@@ -285,6 +293,7 @@ export type Database = {
           user_id: string
           verified?: boolean
           visible_to_other_institutions?: boolean
+          work_samples?: Json
           year: string
         }
         Update: {
@@ -295,8 +304,10 @@ export type Database = {
           field?: string
           full_name?: string
           id?: string
+          id_photo_name?: string
           id_photo_path?: string | null
           institution_id?: string | null
+          institution_name?: string
           linkedin_url?: string
           phone?: string
           placement_status?: string
@@ -305,6 +316,7 @@ export type Database = {
           user_id?: string
           verified?: boolean
           visible_to_other_institutions?: boolean
+          work_samples?: Json
           year?: string
         }
         Relationships: [
@@ -359,10 +371,15 @@ export type Database = {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
       }
+      org_sees_student: {
+        Args: { _student_id: string; _user_id: string }
+        Returns: boolean
+      }
       owns_organization: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      public_stats: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "student" | "institution_admin" | "organization" | "super_admin"

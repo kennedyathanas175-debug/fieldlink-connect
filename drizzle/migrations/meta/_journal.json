@@ -8,6 +8,13 @@
       "when": 1791546092491,
       "tag": "0000_fieldlink_core_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792071919957,
+      "tag": "0001_store_wiring",
+      "breakpoints": true
     }
   ]
 }
