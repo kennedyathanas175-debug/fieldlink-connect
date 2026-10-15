@@ -12,6 +12,7 @@ import {
   removeStudent,
   setApplicationStage,
   setStudentVerified,
+  setCompanyApproved,
   useDB,
 } from "@/lib/fieldlink";
 
@@ -25,7 +26,8 @@ import { useAuth } from "@/hooks/use-auth";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin dashboard — FieldLink TZ" },
+      { title: "FieldLink TZ" },
+      { name: "robots", content: "noindex, nofollow" },
       {
         name: "description",
         content:
@@ -57,7 +59,7 @@ function Admin() {
   if (loading) {
     return (
       <SiteShell>
-        <PageHeading eyebrow="Admin" title="Checking access…" />
+        <PageHeading eyebrow="" title="Loading…" />
       </SiteShell>
     );
   }
@@ -65,21 +67,9 @@ function Admin() {
   if (!user || !hasRole("super_admin")) {
     return (
       <SiteShell>
-        <PageHeading
-          eyebrow="Admin"
-          title="Admins only"
-          intro={
-            user
-              ? "Your account does not have Super Admin access."
-              : "Sign in with a Super Admin account to open the dashboard."
-          }
-        />
+        <PageHeading eyebrow="404" title="Page not found" intro="The page you are looking for does not exist." />
         <section className="py-10">
-          {!user ? (
-            <Link to="/auth" className={fieldStyles.submit}>
-              Sign in
-            </Link>
-          ) : null}
+          <Link to="/" className={fieldStyles.submit}>Go home</Link>
         </section>
       </SiteShell>
     );
@@ -470,6 +460,12 @@ function Dashboard() {
                     </p>
                   </div>
                   <span className="text-sm text-ink-soft">{posts} postings</span>
+                  <button
+                    onClick={() => setCompanyApproved(c.id, !c.approved)}
+                    className={c.approved ? "rounded-full border border-line px-3 py-1.5 text-sm" : "rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground"}
+                  >
+                    {c.approved ? "Approved ✓" : "Approve"}
+                  </button>
                   {confirmedId === c.id ? (
                     <span className="flex items-center gap-2">
                       <button

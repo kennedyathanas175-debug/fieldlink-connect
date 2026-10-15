@@ -41,8 +41,8 @@ function Home() {
             <Link to="/listings" search={{ field: "all", region: "all" }} className="inline-flex items-center rounded-full border border-line px-6 py-3.5 text-sm font-semibold transition-colors hover:border-brand hover:text-brand">Explore opportunities</Link>
           </div>
           <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-ink-soft">
-            <span><strong className="text-xl text-ink">{db.students.length}</strong> students</span>
-            <span><strong className="text-xl text-ink">{db.postings.length}</strong> open placements</span>
+            <span><strong className="text-xl text-ink">{db.stats.students}</strong> students</span>
+            <span><strong className="text-xl text-ink">{db.stats.postings}</strong> open placements</span>
             <span><strong className="text-xl text-ink">{REGIONS.length}</strong> regions</span>
           </div>
         </div>

@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { SiteShell, PageHeading, fieldStyles } from "@/components/site-shell";
-import { FIELDS, REGIONS, YEARS, addStudent, type FieldId } from "@/lib/fieldlink";
+import { FIELDS, REGIONS, YEARS, addStudent, useDB, type FieldId } from "@/lib/fieldlink";
+import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/register-student")({
   head: () => ({
@@ -41,8 +43,13 @@ function RegisterStudent() {
   const navigate = useNavigate();
   const [idPhoto, setIdPhoto] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const db = useDB();
+  const { user, loading } = useAuth();
+  const existing = db.students.find((s) => s.userId && s.userId === user?.id);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
     const parsed = schema.safeParse(data);
@@ -54,7 +61,10 @@ function RegisterStudent() {
     setErrors(next);
     if (Object.keys(next).length > 0 || !parsed.success || !idPhoto) return;
 
-    addStudent({
+    setSaving(true);
+    setFormError("");
+    try {
+    await addStudent({
       fullName: parsed.data.fullName,
       institution: parsed.data.institution,
       field: parsed.data.field as FieldId,
@@ -62,12 +72,15 @@ function RegisterStudent() {
       region: parsed.data.region,
       phone: parsed.data.phone,
       idPhotoName: idPhoto.name,
-      idPhotoUrl: URL.createObjectURL(idPhoto),
       linkedinUrl: "",
       bio: "",
       workSamples: [],
-      verified: false,
-    });
+    }, idPhoto);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Could not save. Try again.");
+      setSaving(false);
+      return;
+    }
     navigate({ to: "/listings", search: { field: "all", region: "all" } });
   }
 
