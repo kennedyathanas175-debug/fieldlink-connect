@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Demo data layer. Everything lives in memory in three separate collections
- * (students, companies, postings) so a real backend can be swapped in later
- * by replacing the mutation functions below.
+ * Shared data layer. All collections are saved in the backend; access rules
+ * decide which rows each signed-in user can read or change.
  */
 
 export type FieldId =
@@ -134,6 +134,7 @@ export const SECTORS = [
 
 export interface Student {
   id: string;
+  userId?: string;
   fullName: string;
   institution: string;
   field: FieldId;
@@ -161,6 +162,8 @@ export interface WorkSample {
 
 export interface Company {
   id: string;
+  ownerId?: string;
+  approved?: boolean;
   name: string;
   sector: string;
   region: string;
@@ -211,152 +214,32 @@ export const JOURNEY_STAGES = [
 
 export const FINAL_STAGE = JOURNEY_STAGES.length - 1;
 
+export interface Stats {
+  students: number;
+  postings: number;
+  byField: Partial<Record<FieldId, number>>;
+}
+
 interface DB {
+  /** Rows the signed-in user is allowed to see (access rules decide the scope). */
   students: Student[];
   companies: Company[];
   postings: Posting[];
   applications: Application[];
+  /** Platform-wide public counts. */
+  stats: Stats;
+  userId: string | null;
+  loaded: boolean;
 }
 
-const uid = () => Math.random().toString(36).slice(2, 10);
-
-const seedCompanies: Company[] = [
-  {
-    id: "c1",
-    name: "Kilimanjaro Telecom Ltd",
-    sector: "Private company",
-    region: "Dar es Salaam",
-    contact: "placements@kilitelecom.co.tz",
-    createdAt: Date.now(),
-  },
-  {
-    id: "c2",
-    name: "Ngorongoro Credit Union",
-    sector: "Bank / Financial institution",
-    region: "Arusha",
-    contact: "+255 754 112 330",
-    createdAt: Date.now(),
-  },
-  {
-    id: "c3",
-    name: "Dodoma District Hospital",
-    sector: "Hospital / Health facility",
-    region: "Dodoma",
-    contact: "training@ddh.go.tz",
-    createdAt: Date.now(),
-  },
-  {
-    id: "c4",
-    name: "Kilimanjaro Coffee Company",
-    sector: "Private company",
-    region: "Kilimanjaro",
-    contact: "hr@kilicoffee.co.tz",
-    createdAt: Date.now(),
-  },
-  {
-    id: "c5",
-    name: "Mwanza Regional Council",
-    sector: "Government office",
-    region: "Mwanza",
-    contact: "internships@mwanzarc.go.tz",
-    createdAt: Date.now(),
-  },
-];
-
-const seedPostings: Posting[] = [
-  {
-    id: "p1",
-    companyId: "c1",
-    companyName: "Kilimanjaro Telecom Ltd",
-    title: "Embedded Systems Intern",
-    field: "engineering",
-    slots: 3,
-    duration: "3 months",
-    deadline: "2026-06-18",
-    region: "Dar es Salaam",
-    description:
-      "Work with the transmission team on device firmware and site testing across the regional network.",
-    createdAt: Date.now(),
-  },
-  {
-    id: "p2",
-    companyId: "c2",
-    companyName: "Ngorongoro Credit Union",
-    title: "Audit & Reporting Intern",
-    field: "business",
-    slots: 2,
-    duration: "4 months",
-    deadline: "2026-07-02",
-    region: "Arusha",
-    description:
-      "Support quarterly reconciliations, member account reviews and branch reporting.",
-    createdAt: Date.now(),
-  },
-  {
-    id: "p3",
-    companyId: "c4",
-    companyName: "Kilimanjaro Coffee Company",
-    title: "Agronomy Field Placement",
-    field: "agriculture",
-    slots: 5,
-    duration: "6 months",
-    deadline: "2026-06-25",
-    region: "Kilimanjaro",
-    description:
-      "Rotate through nursery management, soil sampling and smallholder farmer extension visits.",
-    createdAt: Date.now(),
-  },
-  {
-    id: "p4",
-    companyId: "c3",
-    companyName: "Dodoma District Hospital",
-    title: "Clinical Nursing Placement",
-    field: "health",
-    slots: 8,
-    duration: "10 weeks",
-    deadline: "2026-06-30",
-    region: "Dodoma",
-    description:
-      "Supervised rotation across the ward, laboratory and pharmacy units.",
-    createdAt: Date.now(),
-  },
-  {
-    id: "p5",
-    companyId: "c5",
-    companyName: "Mwanza Regional Council",
-    title: "Public Administration Attachment",
-    field: "law",
-    slots: 4,
-    duration: "3 months",
-    deadline: "2026-07-15",
-    region: "Mwanza",
-    description:
-      "Assist the legal and records unit with by-law drafting support and public filing.",
-    createdAt: Date.now(),
-  },
-];
-
-const seedStudents: Student[] = Array.from({ length: 42 }, (_, i) => ({
-  id: `s${i}`,
-  fullName: `Student ${i + 1}`,
-  institution: "Registered institution",
-  field: FIELDS[i % FIELDS.length]!.id,
-  year: YEARS[i % YEARS.length]!,
-  region: REGIONS[i % REGIONS.length]!,
-  phone: "+255 7XX XXX XXX",
-  idPhotoName: "verified.jpg",
-  linkedinUrl: "",
-  bio: "",
-  workSamples: [],
-  verified: true,
-  createdAt: Date.now(),
-}));
-
 let db: DB = {
-  students: seedStudents,
-  companies: seedCompanies,
-  postings: seedPostings,
+  students: [],
+  companies: [],
+  postings: [],
   applications: [],
+  stats: { students: 0, postings: 0, byField: {} },
+  userId: null,
+  loaded: false,
 };
 
 const listeners = new Set<() => void>();
@@ -366,146 +249,254 @@ const subscribe = (l: () => void) => {
   return () => listeners.delete(l);
 };
 const getSnapshot = () => db;
+const getServerSnapshot = () => db;
+
+let started = false;
+function start() {
+  if (started || typeof window === "undefined") return;
+  started = true;
+  void refresh();
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") void refresh();
+  });
+}
 
 export function useDB(): DB {
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  start();
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-/** The student registered in this browser session, if any. */
-let currentStudentId: string | null = null;
-let currentCompanyId: string | null = null;
+const ts = (v: string) => new Date(v).getTime();
 
-export const getCurrentStudentId = () => currentStudentId;
-export const getCurrentCompanyId = () => currentCompanyId;
+/** Reload every collection from the backend. */
+export async function refresh() {
+  const { data: auth } = await supabase.auth.getUser();
+  const userId = auth.user?.id ?? null;
+  const [st, org, post, app, stats] = await Promise.all([
+    supabase.from("students").select("*"),
+    supabase.from("organizations").select("*"),
+    supabase.from("postings").select("*").order("created_at", { ascending: false }),
+    userId ? supabase.from("applications").select("*") : Promise.resolve({ data: [] as never[] }),
+    supabase.rpc("public_stats"),
+  ]);
 
-export function addStudent(input: Omit<Student, "id" | "createdAt">) {
-  const student: Student = { ...input, id: uid(), createdAt: Date.now() };
-  db = { ...db, students: [...db.students, student] };
-  currentStudentId = student.id;
-  emit();
-  return student;
-}
+  const studentRows = st.data ?? [];
+  const paths = studentRows.map((r) => r.id_photo_path).filter((x): x is string => !!x);
+  const urls = new Map<string, string>();
+  if (userId && paths.length) {
+    const { data } = await supabase.storage.from("id-photos").createSignedUrls(paths, 3600);
+    data?.forEach((d) => d.signedUrl && d.path && urls.set(d.path, d.signedUrl));
+  }
 
-export function updateStudentProfile(
-  studentId: string,
-  input: Pick<Student, "linkedinUrl" | "bio">,
-) {
+  const postings: Posting[] = (post.data ?? []).map((r) => ({
+    id: r.id,
+    companyId: r.organization_id,
+    companyName: r.organization_name,
+    title: r.title,
+    field: r.field as FieldId,
+    slots: r.slots,
+    duration: r.duration,
+    deadline: r.deadline,
+    region: r.region,
+    description: r.description,
+    createdAt: ts(r.created_at),
+  }));
+  const pmap = new Map(postings.map((p) => [p.id, p]));
+  const s = (stats.data ?? {}) as { students?: number; postings?: number; by_field?: Stats["byField"] };
+
   db = {
-    ...db,
-    students: db.students.map((student) =>
-      student.id === studentId ? { ...student, ...input } : student,
-    ),
+    userId,
+    loaded: true,
+    stats: { students: s.students ?? 0, postings: s.postings ?? 0, byField: s.by_field ?? {} },
+    postings,
+    students: studentRows.map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      fullName: r.full_name,
+      institution: r.institution_name,
+      field: r.field as FieldId,
+      year: r.year,
+      region: r.region,
+      phone: r.phone,
+      idPhotoName: r.id_photo_name,
+      idPhotoUrl: r.id_photo_path ? urls.get(r.id_photo_path) : undefined,
+      linkedinUrl: r.linkedin_url,
+      bio: r.bio,
+      workSamples: (r.work_samples as unknown as WorkSample[]) ?? [],
+      verified: r.verified,
+      createdAt: ts(r.created_at),
+    })),
+    companies: (org.data ?? []).map((r) => ({
+      id: r.id,
+      ownerId: r.owner_id,
+      name: r.name,
+      sector: r.industry,
+      region: r.region,
+      contact: r.contact,
+      approved: r.approved,
+      createdAt: ts(r.created_at),
+    })),
+    applications: (app.data ?? []).map((r) => {
+      const p = pmap.get(r.posting_id);
+      return {
+        id: r.id,
+        postingId: r.posting_id,
+        postingTitle: p?.title ?? "Removed posting",
+        companyName: p?.companyName ?? "",
+        studentId: r.student_id,
+        stage: r.stage,
+        createdAt: ts(r.created_at),
+      };
+    }),
   };
   emit();
 }
 
-export function addWorkSample(
-  studentId: string,
-  input: Omit<WorkSample, "id">,
+function fail(error: { message: string } | null) {
+  if (error) throw new Error(error.message);
+}
+
+/** The signed-in user's student record id, if any. */
+export const getCurrentStudentId = () =>
+  db.students.find((s) => s.userId && s.userId === db.userId)?.id ?? null;
+export const getCurrentCompanyId = () =>
+  db.companies.find((c) => c.ownerId && c.ownerId === db.userId)?.id ?? null;
+
+export async function addStudent(
+  input: Omit<Student, "id" | "createdAt" | "verified" | "idPhotoUrl" | "userId">,
+  idPhoto: File,
 ) {
-  const sample = { ...input, id: uid() };
-  db = {
-    ...db,
-    students: db.students.map((student) =>
-      student.id === studentId
-        ? { ...student, workSamples: [...student.workSamples, sample] }
-        : student,
-    ),
-  };
-  emit();
+  if (!db.userId) throw new Error("Please sign in first.");
+  const path = `${db.userId}/${Date.now()}-${idPhoto.name.replace(/[^\w.-]/g, "_")}`;
+  const up = await supabase.storage.from("id-photos").upload(path, idPhoto);
+  fail(up.error);
+  const { error } = await supabase.from("students").insert({
+    user_id: db.userId,
+    full_name: input.fullName,
+    institution_name: input.institution,
+    field: input.field,
+    year: input.year,
+    region: input.region,
+    phone: input.phone,
+    id_photo_path: path,
+    id_photo_name: input.idPhotoName,
+    linkedin_url: input.linkedinUrl,
+    bio: input.bio,
+    work_samples: input.workSamples as never,
+  });
+  fail(error);
+  await refresh();
 }
 
-export function addCompany(input: Omit<Company, "id" | "createdAt">) {
-  const company: Company = { ...input, id: uid(), createdAt: Date.now() };
-  db = { ...db, companies: [...db.companies, company] };
-  currentCompanyId = company.id;
-  emit();
-  return company;
+export async function updateStudentProfile(studentId: string, input: Pick<Student, "linkedinUrl" | "bio">) {
+  const { error } = await supabase
+    .from("students")
+    .update({ linkedin_url: input.linkedinUrl, bio: input.bio })
+    .eq("id", studentId);
+  fail(error);
+  await refresh();
 }
 
-export function addPosting(input: Omit<Posting, "id" | "createdAt">) {
-  const posting: Posting = { ...input, id: uid(), createdAt: Date.now() };
-  db = { ...db, postings: [...db.postings, posting] };
-  emit();
-  return posting;
+export async function addWorkSample(studentId: string, input: Omit<WorkSample, "id">) {
+  const student = db.students.find((s) => s.id === studentId);
+  if (!student) return;
+  const samples = [...student.workSamples, { ...input, id: crypto.randomUUID() }];
+  const { error } = await supabase.from("students").update({ work_samples: samples as never }).eq("id", studentId);
+  fail(error);
+  await refresh();
+}
+
+export async function addCompany(input: Pick<Company, "name" | "sector" | "region" | "contact">) {
+  if (!db.userId) throw new Error("Please sign in first.");
+  const { error } = await supabase.from("organizations").insert({
+    owner_id: db.userId,
+    name: input.name,
+    industry: input.sector,
+    region: input.region,
+    contact: input.contact,
+  });
+  fail(error);
+  await refresh();
+}
+
+export async function addPosting(input: Omit<Posting, "id" | "createdAt">) {
+  const { error } = await supabase.from("postings").insert({
+    organization_id: input.companyId,
+    organization_name: input.companyName,
+    title: input.title,
+    field: input.field,
+    slots: input.slots,
+    duration: input.duration,
+    deadline: input.deadline,
+    region: input.region,
+    description: input.description,
+  });
+  fail(error);
+  await refresh();
 }
 
 export function countStudentsInField(field: FieldId) {
-  return db.students.filter((s) => s.field === field).length;
+  return db.stats.byField[field] ?? 0;
 }
 
-export function addApplication(posting: Posting, studentId: string) {
-  const existing = db.applications.find(
-    (application) => application.postingId === posting.id && application.studentId === studentId,
-  );
-  if (existing) return existing;
-  const application: Application = {
-    id: uid(),
-    postingId: posting.id,
-    postingTitle: posting.title,
-    companyName: posting.companyName,
-    studentId,
-    stage: 2, // profile created + matched + applied
-    createdAt: Date.now(),
-  };
-  db = { ...db, applications: [...db.applications, application] };
-  emit();
-  return application;
+export async function addApplication(posting: Posting, studentId: string) {
+  if (db.applications.some((a) => a.postingId === posting.id && a.studentId === studentId)) return;
+  const { error } = await supabase
+    .from("applications")
+    .insert({ posting_id: posting.id, student_id: studentId, stage: 2 });
+  fail(error);
+  await refresh();
 }
 
-export function advanceApplication(id: string) {
-  db = {
-    ...db,
-    applications: db.applications.map((a) =>
-      a.id === id ? { ...a, stage: Math.min(a.stage + 1, FINAL_STAGE) } : a,
-    ),
-  };
-  emit();
+export async function setApplicationStage(id: string, stage: number) {
+  const { error } = await supabase
+    .from("applications")
+    .update({ stage: Math.max(0, Math.min(stage, FINAL_STAGE)) })
+    .eq("id", id);
+  fail(error);
+  await refresh();
 }
 
-// ----- Admin actions -----
-
-export function setApplicationStage(id: string, stage: number) {
-  db = {
-    ...db,
-    applications: db.applications.map((a) =>
-      a.id === id ? { ...a, stage: Math.max(0, Math.min(stage, FINAL_STAGE)) } : a,
-    ),
-  };
-  emit();
+export async function advanceApplication(id: string) {
+  const a = db.applications.find((x) => x.id === id);
+  if (a) await setApplicationStage(id, a.stage + 1);
 }
 
-export function setStudentVerified(studentId: string, verified: boolean) {
-  db = {
-    ...db,
-    students: db.students.map((s) => (s.id === studentId ? { ...s, verified } : s)),
-  };
-  emit();
+export async function setStudentVerified(studentId: string, verified: boolean) {
+  const { error } = await supabase.from("students").update({ verified }).eq("id", studentId);
+  fail(error);
+  await refresh();
 }
 
-export function removeStudent(studentId: string) {
-  db = {
-    ...db,
-    students: db.students.filter((s) => s.id !== studentId),
-  };
-  emit();
+export async function setCompanyApproved(companyId: string, approved: boolean) {
+  const { error } = await supabase.from("organizations").update({ approved }).eq("id", companyId);
+  fail(error);
+  await refresh();
 }
 
-export function removePosting(postingId: string) {
-  db = {
-    ...db,
-    postings: db.postings.filter((p) => p.id !== postingId),
-  };
-  emit();
+export async function removeStudent(studentId: string) {
+  await supabase.from("applications").delete().eq("student_id", studentId);
+  const { error } = await supabase.from("students").delete().eq("id", studentId);
+  fail(error);
+  await refresh();
 }
 
-export function removeCompany(companyId: string) {
-  db = {
-    ...db,
-    companies: db.companies.filter((c) => c.id !== companyId),
-    postings: db.postings.filter((p) => p.companyId !== companyId),
-  };
-  emit();
+export async function removePosting(postingId: string) {
+  await supabase.from("applications").delete().eq("posting_id", postingId);
+  const { error } = await supabase.from("postings").delete().eq("id", postingId);
+  fail(error);
+  await refresh();
+}
+
+export async function removeCompany(companyId: string) {
+  const ids = db.postings.filter((p) => p.companyId === companyId).map((p) => p.id);
+  if (ids.length) {
+    await supabase.from("applications").delete().in("posting_id", ids);
+    await supabase.from("postings").delete().eq("organization_id", companyId);
+  }
+  const { error } = await supabase.from("organizations").delete().eq("id", companyId);
+  fail(error);
+  await refresh();
 }
 
 export function formatDeadline(iso: string) {
