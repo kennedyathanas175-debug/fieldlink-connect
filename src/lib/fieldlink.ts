@@ -144,7 +144,7 @@ export interface Student {
   /** Object URL of the uploaded ID photo. Never shown to companies. */
   idPhotoName: string;
   /** Preview URL of the ID photo for admin review only. */
-  idPhotoUrl?: string;
+  idPhotoUrl?: string | undefined;
   linkedinUrl: string;
   bio: string;
   workSamples: WorkSample[];
