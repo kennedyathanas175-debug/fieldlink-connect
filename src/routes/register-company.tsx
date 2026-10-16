@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { SiteShell, PageHeading, fieldStyles } from "@/components/site-shell";
-import { REGIONS, SECTORS, addCompany } from "@/lib/fieldlink";
+import { REGIONS, SECTORS, addCompany, useDB } from "@/lib/fieldlink";
+import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/register-company")({
   head: () => ({
@@ -33,8 +35,12 @@ const schema = z.object({
 function RegisterCompany() {
   const navigate = useNavigate();
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const db = useDB();
+  const { user, loading } = useAuth();
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
     const parsed = schema.safeParse(data);
@@ -45,8 +51,36 @@ function RegisterCompany() {
       return;
     }
     setErrors({});
-    addCompany(parsed.data);
+    setSaving(true);
+    setFormError("");
+    try {
+      await addCompany(parsed.data);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Could not save. Try again.");
+      setSaving(false);
+      return;
+    }
     navigate({ to: "/post" });
+  }
+
+  if (loading || !db.loaded) {
+    return <SiteShell><PageHeading eyebrow="" title="Loading…" /></SiteShell>;
+  }
+  if (!user) {
+    return (
+      <SiteShell>
+        <PageHeading eyebrow="Step 1" title="Sign in or create an account first" intro="Your account keeps your registration, applications and progress saved." />
+        <section className="py-8"><Link to="/auth" className={fieldStyles.submit}>Sign in / Create account</Link></section>
+      </SiteShell>
+    );
+  }
+  if (db.companies.some((c) => c.ownerId === user.id)) {
+    return (
+      <SiteShell>
+        <PageHeading eyebrow="Already registered" title="Your organisation is registered" intro="You can publish placements and review applicants." />
+        <section className="py-8"><Link to="/post" className={fieldStyles.submit}>Post a placement</Link></section>
+      </SiteShell>
+    );
   }
 
   return (
@@ -108,9 +142,8 @@ function RegisterCompany() {
           </div>
 
           <div className="mt-6">
-            <button type="submit" className={fieldStyles.submit}>
-              Register and continue to posting
-            </button>
+            {formError ? <p className="mb-3 text-sm text-destructive">{formError}</p> : null}
+            <button type="submit" disabled={saving} className={fieldStyles.submit}>{saving ? "Saving…" : "Register and continue to posting"}</button>
           </div>
         </form>
       </section>

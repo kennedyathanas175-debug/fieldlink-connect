@@ -58,6 +58,8 @@ function PostPlacement() {
   const [aiError, setAiError] = useState("");
   const writeDraft = useServerFn(draftPosting);
 
+  if (!db.loaded) return <SiteShell><PageHeading eyebrow="" title="Loading…" /></SiteShell>;
+
   if (!company) {
     return (
       <SiteShell>
@@ -120,7 +122,7 @@ function PostPlacement() {
     );
   }
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
     const parsed = schema.safeParse(data);
@@ -132,7 +134,8 @@ function PostPlacement() {
     }
     setErrors({});
     const fieldId = parsed.data.field as FieldId;
-    addPosting({
+    try {
+    await addPosting({
       companyId: activeCompany.id,
       companyName: activeCompany.name,
       title: parsed.data.title,
@@ -143,6 +146,10 @@ function PostPlacement() {
       region: parsed.data.region,
       description: parsed.data.description ?? "",
     });
+    } catch (err) {
+      setErrors({ title: err instanceof Error ? err.message : "Could not publish. Try again." });
+      return;
+    }
     setPostedTitle(parsed.data.title);
     setMatchCount(countStudentsInField(fieldId));
     void navigate;

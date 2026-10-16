@@ -11,7 +11,7 @@
 - [x] Modern photo-led home page without boxy layout
 - [x] Student professional profile: LinkedIn connection and field-work showcase
 - [x] Verify build + preview
-- [ ] Enhancement Phase 1: accounts, roles, saved data (tables, rules, sign-in page, admin role lock done; connecting pages to saved data still to do)
+- [x] Enhancement Phase 1: accounts, roles, saved data, hidden admin
 - [ ] Enhancement Phase 2: institutions list, student networking
 - [ ] Enhancement Phase 3: organizations, partners, placement tracking
 - [ ] Enhancement Phase 4: analytics, certificates, verify page

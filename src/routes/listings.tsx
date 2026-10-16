@@ -53,11 +53,11 @@ function Listings() {
   function apply(postingId: string) {
     const current = getCurrentStudentId();
     if (!current) {
-      navigate({ to: "/register-student" });
+      navigate({ to: db.userId ? "/register-student" : "/auth" });
       return;
     }
     const posting = db.postings.find((p) => p.id === postingId);
-    if (posting) addApplication(posting, current);
+    if (posting) addApplication(posting, current).catch((err) => alert(err instanceof Error ? err.message : "Could not apply."));
   }
 
   return (
