@@ -84,6 +84,29 @@ function RegisterStudent() {
     navigate({ to: "/listings", search: { field: "all", region: "all" } });
   }
 
+  if (loading || !db.loaded) {
+    return <SiteShell><PageHeading eyebrow="" title="Loading…" /></SiteShell>;
+  }
+  if (!user) {
+    return (
+      <SiteShell>
+        <PageHeading eyebrow="Step 1" title="Sign in or create an account first" intro="Your account keeps your registration, applications and progress saved." />
+        <section className="py-8"><Link to="/auth" className={fieldStyles.submit}>Sign in / Create account</Link></section>
+      </SiteShell>
+    );
+  }
+  if (existing) {
+    return (
+      <SiteShell>
+        <PageHeading eyebrow="Already registered" title={`Welcome back, ${existing.fullName}`} intro="Your student profile is saved." />
+        <section className="flex flex-wrap gap-3 py-8">
+          <Link to="/listings" search={{ field: "all", region: "all" }} className={fieldStyles.submit}>Browse placements</Link>
+          <Link to="/journey" className={fieldStyles.submit}>Track my applications</Link>
+        </section>
+      </SiteShell>
+    );
+  }
+
   return (
     <SiteShell>
       <PageHeading
@@ -191,8 +214,9 @@ function RegisterStudent() {
           </div>
 
           <div className="mt-6">
-            <button type="submit" className={fieldStyles.submit}>
-              Create student profile
+            {formError ? <p className="mb-3 text-sm text-destructive">{formError}</p> : null}
+            <button type="submit" disabled={saving} className={fieldStyles.submit}>
+              {saving ? "Saving…" : "Create student profile"}
             </button>
           </div>
         </form>
