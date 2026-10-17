@@ -564,3 +564,36 @@ export function formatDeadline(iso: string) {
     year: "numeric",
   });
 }
+
+async function uploadProfileFile(file: File, kind: "image" | "pdf") {
+  if (!db.userId) throw new Error("Please sign in first.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("Choose a file smaller than 5 MB.");
+  if (kind === "image" && !["image/png", "image/jpeg", "image/webp"].includes(file.type)) throw new Error("Choose a PNG, JPG or WebP image.");
+  if (kind === "pdf" && file.type !== "application/pdf") throw new Error("Choose a PDF resume.");
+  const path = `${db.userId}/${crypto.randomUUID()}.${kind === "pdf" ? "pdf" : file.type.split("/")[1]}`;
+  const result = await supabase.storage.from("profile-files").upload(path, file);
+  fail(result.error);
+  return path;
+}
+
+export async function updateCompanyProfile(id: string, input: Partial<Company>, logo?: File) {
+  if (!db.userId || !db.companies.some(c => c.id === id && c.ownerId === db.userId)) throw new Error("You can only edit your own company.");
+  const logoPath = logo ? await uploadProfileFile(logo, "image") : undefined;
+  const result = await supabase.from("organizations").update({ name: input.name, industry: input.sector, region: input.region, contact: input.contact, description: input.description, email: input.email, phone: input.phone, website: safeUrl(input.website ?? ""), address: input.address, city: input.city, linkedin_url: safeUrl(input.linkedinUrl ?? ""), established_year: input.establishedYear, logo_url: logoPath }).eq("id", id).select("id").single();
+  fail(result.error);
+  await refresh();
+}
+
+export async function updatePosting(id: string, input: Omit<Posting, "id" | "createdAt">) {
+  const company = db.companies.find(c => c.id === input.companyId && c.ownerId === db.userId);
+  if (!company) throw new Error("You can only edit your own postings.");
+  const result = await supabase.from("postings").update({ title: input.title, field: input.field, slots: input.slots, duration: input.duration, deadline: input.deadline, region: input.region, description: input.description, organization_name: company.name }).eq("id", id).eq("organization_id", company.id).select("id").single();
+  fail(result.error);
+  await refresh();
+}
+
+export async function getAuditLog() {
+  const result = await supabase.from("admin_audit_log").select("id,entity,record_id,action,created_at").order("created_at", { ascending: false }).limit(100);
+  fail(result.error);
+  return result.data ?? [];
+}
