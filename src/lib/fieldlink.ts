@@ -1,5 +1,6 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { safeUrl } from "@/lib/dashboard-rules";
 
 /**
  * Shared data layer. All collections are saved in the backend; access rules
@@ -84,7 +85,7 @@ export const FIELDS: FieldCategory[] = [
 ];
 
 export const fieldById = (id: FieldId) =>
-  FIELDS.find((f) => f.id === id) ?? FIELDS[0]!;
+  FIELDS.find((f) => f.id === id) ?? { id: "engineering" as const, index: "01", name: "Engineering & Technology", short: "Engineering", examples: "" };
 
 export const REGIONS = [
   "Arusha",
@@ -133,6 +134,12 @@ export const SECTORS = [
 ];
 
 export interface Student {
+  email?: string;
+  course?: string;
+  skills?: string[];
+  location?: string;
+  photoUrl?: string;
+  cvUrl?: string;
   id: string;
   userId?: string;
   fullName: string;
@@ -161,6 +168,15 @@ export interface WorkSample {
 }
 
 export interface Company {
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  description?: string;
+  website?: string;
+  linkedinUrl?: string;
+  establishedYear?: number | null;
+  logoUrl?: string;
   id: string;
   ownerId?: string;
   approved?: boolean;
@@ -221,6 +237,7 @@ export interface Stats {
 }
 
 interface DB {
+  error: string | null;
   /** Rows the signed-in user is allowed to see (access rules decide the scope). */
   students: Student[];
   companies: Company[];
@@ -233,6 +250,7 @@ interface DB {
 }
 
 let db: DB = {
+  error: null,
   students: [],
   companies: [],
   postings: [],
@@ -249,7 +267,8 @@ const subscribe = (l: () => void) => {
   return () => listeners.delete(l);
 };
 const getSnapshot = () => db;
-const getServerSnapshot = () => db;
+const serverSnapshot = db;
+const getServerSnapshot = () => serverSnapshot;
 
 let started = false;
 function start() {
@@ -257,12 +276,16 @@ function start() {
   started = true;
   void refresh();
   supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT") {
+      db = { ...serverSnapshot };
+      emit();
+    }
     if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") void refresh();
   });
 }
 
 export function useDB(): DB {
-  start();
+  useEffect(start, []);
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
@@ -270,15 +293,24 @@ const ts = (v: string) => new Date(v).getTime();
 
 /** Reload every collection from the backend. */
 export async function refresh() {
+  try {
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user?.id ?? null;
   const [st, org, post, app, stats] = await Promise.all([
-    supabase.from("students").select("*"),
+    userId ? supabase.from("students").select("*") : Promise.resolve({ data: [], error: null }),
     supabase.from("organizations").select("*"),
     supabase.from("postings").select("*").order("created_at", { ascending: false }),
-    userId ? supabase.from("applications").select("*") : Promise.resolve({ data: [] as never[] }),
+    userId ? supabase.from("applications").select("*") : Promise.resolve({ data: [] as never[], error: null }),
     supabase.rpc("public_stats"),
   ]);
+  for (const result of [st, org, post, app, stats]) fail(result.error);
+
+  const profilePaths = [...(st.data ?? []).flatMap(r => [r.profile_photo_path, r.cv_path]), ...(org.data ?? []).map(r => r.logo_url)].filter((v): v is string => !!v && !v.startsWith("http"));
+  const profileUrls = new Map<string, string>();
+  if (userId && profilePaths.length) {
+    const signed = await supabase.storage.from("profile-files").createSignedUrls(profilePaths, 3600);
+    signed.data?.forEach(r => { if (r.path && r.signedUrl) profileUrls.set(r.path, r.signedUrl); });
+  }
 
   const studentRows = st.data ?? [];
   const paths = studentRows.map((r) => r.id_photo_path).filter((x): x is string => !!x);
@@ -305,11 +337,18 @@ export async function refresh() {
   const s = (stats.data ?? {}) as { students?: number; postings?: number; by_field?: Stats["byField"] };
 
   db = {
+    error: null,
     userId,
     loaded: true,
     stats: { students: s.students ?? 0, postings: s.postings ?? 0, byField: s.by_field ?? {} },
     postings,
     students: studentRows.map((r) => ({
+      email: r.email,
+      course: r.course,
+      skills: r.skills,
+      location: r.location,
+      photoUrl: r.profile_photo_path ? profileUrls.get(r.profile_photo_path) : undefined,
+      cvUrl: r.cv_path ? profileUrls.get(r.cv_path) : undefined,
       id: r.id,
       userId: r.user_id,
       fullName: r.full_name,
@@ -327,6 +366,15 @@ export async function refresh() {
       createdAt: ts(r.created_at),
     })),
     companies: (org.data ?? []).map((r) => ({
+      email: r.email,
+      phone: r.phone,
+      address: r.address,
+      city: r.city,
+      description: r.description,
+      website: r.website,
+      linkedinUrl: r.linkedin_url,
+      establishedYear: r.established_year,
+      logoUrl: r.logo_url?.startsWith("https://") ? r.logo_url : r.logo_url ? profileUrls.get(r.logo_url) : undefined,
       id: r.id,
       ownerId: r.owner_id,
       name: r.name,
@@ -350,6 +398,10 @@ export async function refresh() {
     }),
   };
   emit();
+  } catch (error) {
+    db = { ...db, loaded: true, error: error instanceof Error ? error.message : "Could not load records. Try again." };
+    emit();
+  }
 }
 
 function fail(error: { message: string } | null) {
@@ -388,10 +440,13 @@ export async function addStudent(
   await refresh();
 }
 
-export async function updateStudentProfile(studentId: string, input: Pick<Student, "linkedinUrl" | "bio">) {
+export async function updateStudentProfile(studentId: string, input: Pick<Student, "linkedinUrl" | "bio"> & Partial<Student>, photo?: File, cv?: File) {
+  if (!db.userId || !db.students.some(s => s.id === studentId && s.userId === db.userId)) throw new Error("You can only edit your own profile.");
+  const photoPath = photo ? await uploadProfileFile(photo, "image") : undefined;
+  const cvPath = cv ? await uploadProfileFile(cv, "pdf") : undefined;
   const { error } = await supabase
     .from("students")
-    .update({ linkedin_url: input.linkedinUrl, bio: input.bio })
+    .update({ linkedin_url: safeUrl(input.linkedinUrl), bio: input.bio, full_name: input.fullName, institution_name: input.institution, course: input.course, field: input.field, year: input.year, region: input.region, phone: input.phone, skills: input.skills, location: input.location, email: input.email, profile_photo_path: photoPath, cv_path: cvPath })
     .eq("id", studentId);
   fail(error);
   await refresh();
@@ -440,18 +495,19 @@ export function countStudentsInField(field: FieldId) {
 }
 
 export async function addApplication(posting: Posting, studentId: string) {
+  if (getCurrentStudentId() !== studentId) throw new Error("Please use your own student profile.");
   if (db.applications.some((a) => a.postingId === posting.id && a.studentId === studentId)) return;
   const { error } = await supabase
     .from("applications")
     .insert({ posting_id: posting.id, student_id: studentId, stage: 2 });
-  fail(error);
+  if (error?.code !== "23505") fail(error);
   await refresh();
 }
 
 export async function setApplicationStage(id: string, stage: number) {
   const { error } = await supabase
     .from("applications")
-    .update({ stage: Math.max(0, Math.min(stage, FINAL_STAGE)) })
+    .update({ stage: Math.max(2, Math.min(stage, FINAL_STAGE)) })
     .eq("id", id);
   fail(error);
   await refresh();
