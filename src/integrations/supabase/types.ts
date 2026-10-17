@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity: string
+          id: string
+          record_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity: string
+          id?: string
+          record_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity?: string
+          id?: string
+          record_id?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           completion_approved: boolean
@@ -159,41 +186,59 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address: string
           approved: boolean
+          city: string
           contact: string
           created_at: string
           description: string
+          email: string
+          established_year: number | null
           id: string
           industry: string
+          linkedin_url: string
           logo_url: string | null
           name: string
           owner_id: string
+          phone: string
           region: string
           website: string
         }
         Insert: {
+          address?: string
           approved?: boolean
+          city?: string
           contact: string
           created_at?: string
           description?: string
+          email?: string
+          established_year?: number | null
           id?: string
           industry?: string
+          linkedin_url?: string
           logo_url?: string | null
           name: string
           owner_id: string
+          phone?: string
           region: string
           website?: string
         }
         Update: {
+          address?: string
           approved?: boolean
+          city?: string
           contact?: string
           created_at?: string
           description?: string
+          email?: string
+          established_year?: number | null
           id?: string
           industry?: string
+          linkedin_url?: string
           logo_url?: string | null
           name?: string
           owner_id?: string
+          phone?: string
           region?: string
           website?: string
         }
@@ -254,7 +299,9 @@ export type Database = {
           bio: string
           course: string
           created_at: string
+          cv_path: string | null
           department: string
+          email: string
           field: string
           full_name: string
           id: string
@@ -263,8 +310,10 @@ export type Database = {
           institution_id: string | null
           institution_name: string
           linkedin_url: string
+          location: string
           phone: string
           placement_status: string
+          profile_photo_path: string | null
           region: string
           skills: string[]
           user_id: string
@@ -277,7 +326,9 @@ export type Database = {
           bio?: string
           course?: string
           created_at?: string
+          cv_path?: string | null
           department?: string
+          email?: string
           field: string
           full_name: string
           id?: string
@@ -286,8 +337,10 @@ export type Database = {
           institution_id?: string | null
           institution_name?: string
           linkedin_url?: string
+          location?: string
           phone: string
           placement_status?: string
+          profile_photo_path?: string | null
           region: string
           skills?: string[]
           user_id: string
@@ -300,7 +353,9 @@ export type Database = {
           bio?: string
           course?: string
           created_at?: string
+          cv_path?: string | null
           department?: string
+          email?: string
           field?: string
           full_name?: string
           id?: string
@@ -309,8 +364,10 @@ export type Database = {
           institution_id?: string | null
           institution_name?: string
           linkedin_url?: string
+          location?: string
           phone?: string
           placement_status?: string
+          profile_photo_path?: string | null
           region?: string
           skills?: string[]
           user_id?: string
