@@ -1,5 +1,11 @@
 # Roadmap — FieldLink TZ
 
+- [ ] Current upgrade: student profile, dashboard and application history
+- [ ] Current upgrade: company profile, opportunities and applicants
+- [ ] Current upgrade: admin search, filters and real-data reports
+- [ ] Current upgrade: permissions, document privacy and duplicate protection
+- [ ] Current upgrade: tests, responsive checks and implementation report
+
 - [x] Home page (hero, 8 field grid, live counters, CTAs)
 - [x] Listings page (field/region filters, apply flow)
 - [x] Student registration (mandatory ID photo, privacy note)
