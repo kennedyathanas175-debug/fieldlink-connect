@@ -15,6 +15,13 @@
       "when": 1792071919957,
       "tag": "0001_store_wiring",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792223871907,
+      "tag": "0002_dashboard_profiles_security_audit",
+      "breakpoints": true
     }
   ]
 }
